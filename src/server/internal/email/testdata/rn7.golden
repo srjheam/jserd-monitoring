@@ -1,0 +1,9 @@
+[JSERD] Review submission deadline — Artigo
+---TEXT---
+Hello, Revisora.
+
+The deadline to submit the review for submission 42 — Artigo is near.
+The deadline to submit the review is 10/06/2026.
+Please submit the review in OJS: https://ojs.example.test/42
+---HTML---
+<p>Hello, Revisora.</p><p>The deadline to submit the review for submission <strong>42 — Artigo</strong> is near.</p><p>The deadline to submit the review is 10/06/2026.</p><p>Please submit the review in <a href="https://ojs.example.test/42">OJS</a>.</p>

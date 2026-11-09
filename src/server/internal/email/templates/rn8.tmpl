@@ -1,0 +1,8 @@
+{{define "subject"}}[JSERD] Review deadline expired — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+The deadline to submit the review for submission {{.SubmissionID}} — {{.Title}} expired.
+The deadline to submit the review was {{.Deadline}}.
+Please submit the review in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>The deadline to submit the review for submission <strong>{{.SubmissionID}} — {{.Title}}</strong> expired.</p><p>The deadline to submit the review was {{.Deadline}}.</p><p>Please submit the review in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

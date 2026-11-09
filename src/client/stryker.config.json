@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "packageManager": "pnpm",
+  "testRunner": "vitest",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "vitest": {
+    "configFile": "vitest.stryker.config.ts"
+  },
+  "reporters": ["html", "clear-text", "progress"],
+  "mutate": ["src/lib/**/*.ts"],
+  "incremental": true,
+  "incrementalFile": ".runtime/stryker-incremental.json",
+  "concurrency": 4,
+  "tempDirName": ".runtime/stryker-tmp",
+  "thresholds": {
+    "high": 80,
+    "low": 70,
+    "break": 75
+  }
+}

@@ -1,0 +1,1186 @@
+@import "tailwindcss";
+
+/* Tokens measured from the OJS 3.2.1.2 interface the chief editors already
+   use: https://journals-sol.sbc.org.br/styles/build.css */
+:root {
+  --ojs-primary: #007ab2;
+  --ojs-primary-hover: #009de5;
+  --ojs-dark: #002c40;
+  --ojs-warnable: #d00a6c;
+  --ojs-success: #00844e;
+  --ojs-stage-review: #e08914;
+  --ojs-disabled: #b7c5ca;
+  --ojs-border: #ddd;
+  --ojs-border-strong: #bbb;
+  --ojs-surface-muted: #eee;
+  --ojs-informative: #0a6ed0;
+  --ojs-canvas: #fff;
+  --ojs-text: #222;
+  /* OJS ships #777, which is 4.48:1 on --ojs-canvas and 3.86:1 on
+     --ojs-surface-muted. #6c6c6c is the smallest darkening that clears
+     4.5:1 on both: 5.25:1 and 4.53:1. */
+  --ojs-text-muted: #6c6c6c;
+  --ojs-font:
+    "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", sans-serif;
+
+  /* mobile-first: the readable scale is the default */
+  --ojs-size-sm: 14px;
+  --ojs-size-md: 16px;
+  --ojs-size-lg: 18px;
+  --ojs-size-xl: 22px;
+  --ojs-row-pad: 12px 16px;
+  --ojs-tap: 44px;
+
+  --ojs-space-1: 8px;
+  --ojs-space-2: 16px;
+  --ojs-space-3: 24px;
+  --ojs-space-4: 32px;
+  --ojs-radius: 2px;
+  --ojs-radius-pill: 1.2em;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --ojs-size-sm: 12px;
+    --ojs-size-md: 14px;
+    --ojs-size-lg: 16px;
+    --ojs-size-xl: 20px;
+    --ojs-row-pad: 8px 16px;
+    --ojs-tap: 24px;
+  }
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--ojs-canvas);
+  color: var(--ojs-text);
+  font-family: var(--ojs-font);
+  font-size: var(--ojs-size-md);
+  line-height: 1.45;
+}
+/* The OJS `-screenReader` habit: a label that only assistive technology reads. */
+.-screenReader {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--ojs-primary);
+  outline-offset: 2px;
+}
+.monitoring-shell {
+  width: 100%;
+  max-width: 1440px;
+  margin: auto;
+  padding: var(--ojs-space-2);
+}
+.topbar {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.topbar {
+  justify-content: space-between;
+  border-bottom: 1px solid var(--ojs-border);
+  padding-bottom: var(--ojs-space-2);
+}
+.topbar-shell-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--ojs-space-1);
+  margin-left: auto;
+}
+.health {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: var(--ojs-tap);
+  background: none;
+  border: 0;
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+  padding: 0;
+}
+.health-dot {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  background: var(--ojs-success);
+}
+.health-dot-failed {
+  background: var(--ojs-warnable);
+}
+.health-dot-unknown {
+  background: var(--ojs-disabled);
+}
+h1,
+h2 {
+  margin: 0.15rem 0;
+}
+.topbar h1 {
+  font-size: var(--ojs-size-xl);
+}
+.eyebrow {
+  color: var(--ojs-primary);
+  font-size: var(--ojs-size-sm);
+  font-weight: bold;
+  letter-spacing: 0.07em;
+  margin: 0;
+  text-transform: uppercase;
+}
+button {
+  background: var(--ojs-canvas);
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius);
+  color: var(--ojs-text);
+  min-height: var(--ojs-tap);
+  padding: var(--ojs-row-pad);
+}
+button:hover,
+button.active {
+  background: var(--ojs-primary);
+  border-color: var(--ojs-primary);
+  color: var(--ojs-canvas);
+}
+.last-sync {
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+}
+.notice {
+  border: 1px solid var(--ojs-border);
+  border-radius: var(--ojs-radius);
+  padding: 0.75rem;
+}
+.failure {
+  color: var(--ojs-warnable);
+}
+.listing-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: 0 0 1rem;
+}
+.scroll-sentinel {
+  height: 1px;
+}
+.monitoring-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 32rem);
+  align-items: start;
+  gap: 1rem;
+}
+.detail-panel {
+  border: 1px solid var(--ojs-border);
+  border-radius: var(--ojs-radius);
+  background: var(--ojs-canvas);
+  padding: 1rem;
+}
+.detail-panel__close {
+  min-width: var(--ojs-tap);
+  min-height: var(--ojs-tap);
+  padding: 0 0.4rem;
+  margin-bottom: 0.5rem;
+}
+.detail-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--ojs-border);
+  padding-bottom: 0.75rem;
+}
+.detail-section {
+  border-bottom: 1px solid var(--ojs-border);
+  padding: 0.85rem 0;
+}
+.detail-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: var(--ojs-size-lg);
+}
+.detail-section summary {
+  cursor: pointer;
+  color: var(--ojs-text);
+  font-weight: bold;
+}
+.detail-section summary + * {
+  margin-top: 0.65rem;
+}
+.detail-panel dl {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  gap: 0.35rem 0.65rem;
+  margin: 0;
+}
+.detail-panel dt {
+  color: var(--ojs-text-muted);
+  font-weight: bold;
+}
+.detail-panel dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.evidence-list {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+/* OJS marks a state with a coloured dot and reads the label in body text, so
+   the label never depends on a coloured background for contrast. */
+.state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: var(--ojs-radius-pill);
+  padding: 0.12rem 0.5rem;
+  background: var(--ojs-surface-muted);
+  color: var(--ojs-text);
+  font-size: var(--ojs-size-sm);
+}
+.state::before {
+  content: "";
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: var(--ojs-border-strong);
+}
+.state-overdue::before,
+.state-attention::before,
+.state-submission-problem::before {
+  background: var(--ojs-warnable);
+}
+.state-awaiting-revision::before {
+  background: var(--ojs-stage-review);
+}
+.state-normal::before,
+.state-accepted::before {
+  background: var(--ojs-success);
+}
+.sign-in {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 1rem;
+}
+.sign-in form {
+  width: min(100%, 28rem);
+  background: var(--ojs-canvas);
+  border: 1px solid var(--ojs-border);
+  border-radius: var(--ojs-radius);
+  padding: 1.5rem;
+}
+.link-button {
+  display: block;
+  margin-top: 0.75rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ojs-text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+/* One shared shape for every react-aria-components TextField in the app: the
+   label sits above a bordered input box, and an invalid field's message
+   renders right below the box it describes. */
+.react-aria-TextField {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.6rem 0;
+}
+.react-aria-Label {
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+  font-weight: bold;
+}
+.react-aria-Input,
+.react-aria-TextArea {
+  display: block;
+  width: 100%;
+  background: var(--ojs-canvas);
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius);
+  padding: 0.5rem;
+  color: var(--ojs-text);
+  font: inherit;
+}
+.react-aria-TextArea {
+  resize: vertical;
+}
+.react-aria-FieldError {
+  margin: 0;
+  color: var(--ojs-warnable);
+  font-size: var(--ojs-size-sm);
+}
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+}
+.save-status--success {
+  color: var(--ojs-success);
+}
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: #002c4088;
+  padding: 1rem;
+}
+.modal {
+  max-height: calc(100vh - 2rem);
+  width: min(100%, 52rem);
+  overflow: auto;
+  border-radius: var(--ojs-radius);
+  background: var(--ojs-canvas);
+  padding: 1.25rem;
+  box-shadow: 0 1rem 3rem #0004;
+}
+.modal-overlay--full-screen {
+  padding: 0;
+}
+.modal--full-screen {
+  max-height: 100vh;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+.modal dl {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 0.45rem 0.8rem;
+}
+.modal dt {
+  color: var(--ojs-text-muted);
+  font-weight: bold;
+}
+.modal dd {
+  margin: 0;
+}
+.readonly {
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+}
+.unassign-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: var(--ojs-space-1);
+}
+.conference-list {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+}
+.conference-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-top: 1px solid var(--ojs-border);
+  padding: 0.65rem 0;
+}
+[data-react-aria-Popover] {
+  background: var(--ojs-canvas);
+  border: 1px solid var(--ojs-border);
+  border-radius: var(--ojs-radius);
+  box-shadow: 0 0.4rem 1rem #0002;
+  padding: 0.25rem;
+}
+[data-react-aria-ListBoxItem] {
+  cursor: pointer;
+  padding: 0.4rem 0.6rem;
+}
+[data-react-aria-ListBoxItem][data-focused],
+[data-react-aria-ListBoxItem][data-hovered] {
+  background: var(--ojs-surface-muted);
+}
+.react-aria-Popover {
+  background: var(--ojs-canvas);
+  border: 1px solid var(--ojs-border);
+  border-radius: var(--ojs-radius);
+  box-shadow: 0 0.4rem 1rem #0002;
+  padding: 0.25rem;
+}
+.react-aria-MenuItem {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  min-height: var(--ojs-tap);
+  padding: var(--ojs-row-pad);
+}
+.react-aria-MenuItem[data-focused],
+.react-aria-MenuItem[data-hovered] {
+  background: var(--ojs-surface-muted);
+}
+.submission-title {
+  margin: 0.2rem 0 0;
+  font-size: var(--ojs-size-md);
+}
+/* Findings lead the page as badges. They carry the warnable colour on the mark
+   and on the border only: the label itself stays body text, so it never
+   depends on a coloured background for contrast. */
+.finding-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ojs-space-1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.finding-badge {
+  border: 1px solid var(--ojs-warnable);
+  border-radius: var(--ojs-radius-pill);
+  color: var(--ojs-text);
+  font-size: var(--ojs-size-sm);
+  padding: 0.12rem 0.5rem;
+}
+.finding-badge > span {
+  color: var(--ojs-warnable);
+}
+.activity {
+  display: grid;
+  gap: var(--ojs-space-1);
+  list-style: none;
+  margin: 0 0 var(--ojs-space-2);
+  padding: 0;
+}
+.activity-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border-bottom: 1px solid var(--ojs-border);
+  padding-bottom: var(--ojs-space-1);
+}
+.activity-when {
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+  white-space: normal;
+}
+.activity-body {
+  align-items: center;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.activity-entry-detail {
+  display: grid;
+  gap: 0.5rem;
+}
+.activity-mark {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--ojs-success, var(--ojs-text-muted));
+  cursor: help;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0.35rem;
+  position: relative;
+  width: fit-content;
+}
+.activity-mark[data-failed="true"] {
+  color: var(--ojs-warnable);
+}
+.activity-mark[data-kind="journal"] {
+  color: var(--ojs-text-muted);
+}
+.activity-mark:hover,
+.activity-mark:focus-visible {
+  background: transparent;
+  color: var(--ojs-success);
+}
+.activity-mark[data-failed="true"]:hover,
+.activity-mark[data-failed="true"]:focus-visible {
+  color: var(--ojs-warnable);
+}
+.activity-mark[data-kind="journal"]:hover,
+.activity-mark[data-kind="journal"]:focus-visible {
+  color: var(--ojs-text-muted);
+}
+.activity-recipient,
+.activity-author {
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+}
+.activity-empty {
+  margin-bottom: var(--ojs-space-3);
+}
+.note-box {
+  display: grid;
+  gap: var(--ojs-space-1);
+}
+.note-box textarea {
+  width: 100%;
+  background: var(--ojs-canvas);
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius);
+  color: var(--ojs-text);
+  font: inherit;
+  padding: 0.4rem;
+}
+.note-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ojs-space-1);
+}
+.note-actions__left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ojs-space-1);
+}
+.note-actions p {
+  margin: 0;
+}
+.conference-field {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: var(--ojs-space-1);
+}
+.conference-field__association {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-basis: 100%;
+  gap: var(--ojs-space-1);
+}
+.conference-field__name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.conference-field__trigger {
+  flex-shrink: 0;
+}
+@media (max-width: 767px) {
+  .conference-field__association {
+    flex-direction: column;
+    align-items: start;
+  }
+}
+.conference-field__label {
+  display: flex;
+  align-items: end;
+  gap: var(--ojs-space-1);
+}
+.conference-field__label-text,
+.conference-field__info {
+  background: none;
+  border: 0;
+  min-height: auto;
+  padding: 0;
+}
+.conference-field__label-text:hover,
+.conference-field__info:hover {
+  background: none;
+  color: var(--ojs-primary);
+}
+.conference-field__label-text {
+  text-decoration: underline;
+}
+.conference-field__info {
+  display: inline-flex;
+  align-items: center;
+}
+/* The bracket shape belongs to this system alone: no OJS value uses it. */
+.conference-chip {
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius-pill);
+  font-size: var(--ojs-size-sm);
+  padding: 0.12rem 0.5rem;
+}
+.jserd-marker {
+  min-height: var(--ojs-tap);
+  padding: 0.12rem 0.5rem;
+  font-size: var(--ojs-size-sm);
+}
+.mute-field {
+  display: flex;
+  align-items: center;
+  flex-basis: 100%;
+  gap: var(--ojs-space-1);
+}
+.tooltip {
+  max-width: 20rem;
+  background: var(--ojs-dark);
+  border-radius: var(--ojs-radius);
+  color: var(--ojs-canvas);
+  font-size: var(--ojs-size-sm);
+  padding: 0.4rem 0.6rem;
+}
+.ojs-link {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+.ojs-link__label {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 0;
+  transition:
+    max-width 0.15s ease,
+    opacity 0.15s ease;
+}
+.ojs-link:hover,
+.ojs-link:focus-visible {
+  text-decoration: underline;
+}
+.ojs-link:hover .ojs-link__label,
+.ojs-link:focus-visible .ojs-link__label {
+  max-width: 10rem;
+  opacity: 1;
+}
+.ojs-link__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-left: 0.3rem;
+}
+
+/* The work list. One list, one row per submission, mobile first: the row
+   stacks below 768px and relaxes its density, because a chief editor reads it
+   on a phone between meetings. */
+.work-list {
+  min-width: 0;
+}
+.rows-scroll {
+  min-width: 0;
+}
+.rows {
+  display: grid;
+  gap: var(--ojs-space-1);
+  border-top: 1px solid var(--ojs-border);
+}
+/* The row anatomy measured on OJS `pkpListPanelItem--submission`: one anchor
+   over id, author, title and activity, and the action cluster outside it. */
+.row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ojs-space-1);
+  border-bottom: 1px solid var(--ojs-border);
+  background: var(--ojs-canvas);
+  padding: var(--ojs-row-pad);
+  transition:
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+.row:hover,
+.row:focus-within {
+  box-shadow: 0 2px 6px #0002;
+  transform: translateY(-1px);
+}
+/* The row for the submission open in the right panel: a left rule, so it
+   reads at a glance which row the panel belongs to. */
+.row--active {
+  border-left: 3px solid var(--ojs-primary);
+  background: var(--ojs-surface-muted);
+}
+.row__link {
+  display: grid;
+  grid-template-areas: "id title" "id author" "id activity";
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.15rem var(--ojs-space-2);
+  min-width: 0;
+  flex: 1 1 auto;
+  color: var(--ojs-text);
+  text-decoration: none;
+}
+/* The stretched box stops before the action cluster, which stays clickable. */
+.row__link::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  right: calc(3 * var(--ojs-tap) + 3 * var(--ojs-space-1));
+}
+.row__id {
+  grid-area: id;
+  align-self: start;
+  color: var(--ojs-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* Deliberate break from OJS, where the author is bold and the title is not:
+   our unit is the submission, so the title carries the weight. */
+.row__title {
+  grid-area: title;
+  font-weight: 700;
+}
+.row:hover .row__title,
+.row:focus-within .row__title {
+  text-decoration: underline;
+}
+.row__chevron {
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+.row:hover .row__chevron,
+.row:focus-within .row__chevron {
+  opacity: 1;
+}
+.row__author {
+  grid-area: author;
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+  font-weight: 400;
+}
+.row__activity {
+  grid-area: activity;
+  display: flex;
+  align-items: center;
+  gap: var(--ojs-space-1);
+  flex-wrap: wrap;
+  font-size: var(--ojs-size-sm);
+}
+.row__elapsed {
+  color: var(--ojs-text-muted);
+}
+.row__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--ojs-space-1);
+  flex: 0 0 auto;
+}
+.row__note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ojs-tap);
+  min-height: var(--ojs-tap);
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius);
+  color: var(--ojs-text);
+  text-decoration: none;
+}
+.row__note:hover {
+  background: var(--ojs-primary);
+  border-color: var(--ojs-primary);
+  color: var(--ojs-canvas);
+}
+.row__send-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ojs-tap);
+  min-height: var(--ojs-tap);
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius);
+  color: var(--ojs-text);
+}
+.row__send-back:hover {
+  background: var(--ojs-primary);
+  border-color: var(--ojs-primary);
+  color: var(--ojs-canvas);
+}
+a:focus-visible {
+  outline: 3px solid var(--ojs-primary);
+  outline-offset: 2px;
+}
+/* Every finding is warnable magenta, never red: red is the OJS submission
+   stage. Colour never carries meaning alone, so each badge pairs it with an
+   uppercase word and an icon. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid var(--ojs-warnable);
+  border-radius: var(--ojs-radius-pill);
+  padding: 0.15em 1em;
+  color: var(--ojs-warnable);
+  font-size: var(--ojs-size-sm);
+  line-height: 1.7;
+  text-transform: uppercase;
+}
+.badge--solid {
+  background: var(--ojs-warnable);
+  color: var(--ojs-canvas);
+}
+/* The queue badge reads as information, not as an alarm, while a chief
+   editor is searching or filtering. Outside of that state it keeps the
+   warnable magenta above, unchanged. */
+.badge--search {
+  border-color: var(--ojs-informative);
+  color: var(--ojs-informative);
+}
+.badge--final {
+  border-color: var(--ojs-informative);
+  color: var(--ojs-informative);
+}
+.split-button {
+  display: flex;
+}
+.split-button__main,
+.split-button__caret {
+  min-width: var(--ojs-tap);
+  min-height: var(--ojs-tap);
+  padding: 0 0.4rem;
+}
+.split-button__main {
+  border-right-width: 0;
+}
+.search-row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--ojs-space-1);
+  width: 100%;
+  margin-bottom: var(--ojs-space-2);
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--ojs-space-1);
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  border: 1px solid var(--ojs-border);
+  padding: var(--ojs-space-1);
+}
+/* Mirrors the primary-color focus ring (button:focus-visible) so the whole
+   bar visibly lights up together with the tag being cycled into, even
+   though the arrow-key zone model never moves real DOM focus onto it. */
+.search--zone-active {
+  border-color: var(--ojs-primary);
+}
+.tag-token--active {
+  color: var(--ojs-primary);
+}
+/* The tag-token strip wraps and never clips. */
+.search__chips {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* Tags read as inline text tokens alongside the typed query, not as
+   separate leading chip pills: no border, no background, just the
+   "tag:label" text with a small edit/remove affordance. */
+.tag-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1rem;
+  font-size: var(--ojs-size-sm);
+}
+.tag-token button {
+  min-height: var(--ojs-tap);
+  border: 0;
+  background: none;
+  padding: 0 0.2rem;
+}
+.search input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: var(--ojs-tap);
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius);
+  padding: 0 var(--ojs-tap) 0 0.5rem;
+  color: var(--ojs-text);
+}
+.search__clear {
+  position: absolute;
+  right: var(--ojs-space-1);
+  top: 50%;
+  transform: translateY(-50%);
+  min-height: var(--ojs-tap);
+  min-width: var(--ojs-tap);
+  border: 0;
+  background: none;
+  color: var(--ojs-text-muted);
+}
+.search__submit {
+  flex: 0 0 auto;
+  min-width: var(--ojs-tap);
+  border: 1px solid var(--ojs-border-strong);
+  border-radius: var(--ojs-radius);
+  background: var(--ojs-canvas);
+  color: var(--ojs-text);
+}
+.search__suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--ojs-canvas);
+  border: 1px solid var(--ojs-border);
+  box-shadow: 0 0.4rem 1rem #0002;
+}
+.search__suggestions:empty {
+  display: none;
+}
+.search__suggestions [role="option"] {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  min-height: var(--ojs-tap);
+  padding: 0 var(--ojs-space-1);
+}
+.search__suggestions [aria-selected="true"] {
+  background: var(--ojs-surface-muted);
+}
+.search__group-label {
+  padding: 0.2rem var(--ojs-space-1) 0;
+  font-size: var(--ojs-size-sm);
+  color: var(--ojs-text-muted);
+  text-transform: uppercase;
+}
+/* Idle-open shows both groups as a browse affordance, not live filter
+   results, so they read as dimmed until a chip narrows them. */
+.search__suggestions [role="option"].dimmed {
+  color: var(--ojs-text-muted);
+}
+.search__note {
+  padding: 0.4rem var(--ojs-space-1);
+  font-size: var(--ojs-size-sm);
+  font-style: italic;
+  color: var(--ojs-text-muted);
+}
+.row__folder-badge {
+  text-transform: uppercase;
+}
+.work-list__footer {
+  display: flex;
+  align-items: center;
+  gap: var(--ojs-space-2);
+  flex-wrap: wrap;
+  justify-content: space-between;
+  border-top: 1px solid var(--ojs-border);
+  padding: var(--ojs-row-pad);
+  font-size: var(--ojs-size-sm);
+}
+.work-list__footer .side-screen {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ojs-tap);
+  color: var(--ojs-text-muted);
+}
+.work-list__footer .side-screen:hover,
+.work-list__footer .side-screen:focus-visible {
+  color: var(--ojs-primary);
+}
+.side-screen--archived {
+  margin-left: auto;
+}
+
+/* The two side screens. They borrow the work list row wholesale, because a
+   submission reads the same wherever it sits; only the action cluster and
+   the line under the badges differ. */
+.side-screen-view__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ojs-space-2);
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: var(--ojs-space-2);
+}
+.side-screen-view__header h2 {
+  margin: 0;
+  font-size: var(--ojs-size-xl);
+}
+.side-screen-view__back {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--ojs-tap);
+  color: var(--ojs-primary);
+}
+/* One control on a muted row and none on an up to date row, where the work
+   list has three, so the stretched box reaches further across the row. */
+.side-screen-view .row__link::after {
+  right: calc(var(--ojs-tap) + var(--ojs-space-1));
+}
+.side-screen-view .row--quiet .row__link::after {
+  right: 0;
+}
+.cluster {
+  margin-bottom: var(--ojs-space-3);
+}
+.cluster__header {
+  display: flex;
+  align-items: center;
+  gap: var(--ojs-space-1);
+  flex-wrap: wrap;
+  padding: var(--ojs-row-pad);
+  background: var(--ojs-surface-muted);
+}
+.cluster__header h3 {
+  margin: 0;
+  font-size: var(--ojs-size-md);
+}
+.cluster__count {
+  color: var(--ojs-text-muted);
+  font-size: var(--ojs-size-sm);
+}
+/* The marker sits at the far end of the header, where the OJS list panel
+   keeps its own right-hand affordances. */
+.cluster__header .jserd-marker {
+  margin-left: auto;
+}
+.row__unmute {
+  min-width: var(--ojs-tap);
+  min-height: var(--ojs-tap);
+  padding: 0 0.4rem;
+}
+/* The suffix belongs to the row, not to one badge: the stamp is a hash of
+   the finding kinds, so it can say the set changed and never which member
+   changed. */
+.row__since-muted,
+.row__why {
+  color: var(--ojs-text-muted);
+}
+/* Congratulation, not celebration: small grey line art, no brand colour,
+   nothing a chief editor could read as a status. */
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--ojs-space-1);
+  padding: var(--ojs-space-4) var(--ojs-space-2);
+  text-align: center;
+}
+.empty-state__art {
+  fill: none;
+  stroke: var(--ojs-border-strong);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.empty-state__caption,
+.empty-state__caption {
+  font-size: var(--ojs-size-lg);
+}
+@media (min-width: 768px) {
+  .rows {
+    gap: 0;
+  }
+  /* The topbar, each section's search bar and the detail panel stay in view
+     while the section's own rows scroll: the shell fills the viewport and
+     hands every fixed-height sibling its natural size, leaving the rest to
+     the one child that scrolls. */
+  .monitoring-shell {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .topbar {
+    flex: 0 0 auto;
+  }
+  .monitoring-workspace {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+  .detail-panel {
+    min-height: 0;
+    max-height: none;
+    overflow: auto;
+  }
+  .work-list,
+  .side-screen-view {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .work-list > .search,
+  .side-screen-view__header,
+  .side-screen-view > .search {
+    flex: 0 0 auto;
+  }
+  .rows-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+  .work-list__footer {
+    flex: 0 0 auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .row__chevron {
+    transition: none;
+  }
+  .row:hover,
+  .row:focus-within {
+    transform: none;
+  }
+}
+@media (max-width: 767px) {
+  /* The row stacks: the action cluster moves under the content so the title
+     and the badges get the whole width instead of ~160px of it. */
+  .row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .row__actions {
+    justify-content: flex-end;
+  }
+  .row__link::after {
+    right: 0;
+    bottom: calc(var(--ojs-tap) + var(--ojs-space-1));
+  }
+  .monitoring-shell {
+    padding: 0.75rem;
+  }
+  .topbar {
+    align-items: flex-start;
+  }
+  .modal dl {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+  .modal dd {
+    margin-bottom: 0.6rem;
+  }
+  .listing-status {
+    align-items: flex-start;
+  }
+  .monitoring-workspace {
+    grid-template-columns: 1fr;
+  }
+  .detail-panel dl {
+    grid-template-columns: 1fr;
+    gap: 0.2rem;
+  }
+  .detail-panel dd {
+    margin-bottom: 0.5rem;
+  }
+}

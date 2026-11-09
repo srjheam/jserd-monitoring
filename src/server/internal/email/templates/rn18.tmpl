@@ -1,0 +1,7 @@
+{{define "subject"}}[JSERD] No copyeditor assigned — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+Submission {{.SubmissionID}} — {{.Title}} is in Copyediting and has no copyeditor assigned.
+Please assign a copyeditor in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>Submission <strong>{{.SubmissionID}} — {{.Title}}</strong> is in Copyediting and has no copyeditor assigned.</p><p>Please assign a copyeditor in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

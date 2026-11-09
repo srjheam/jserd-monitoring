@@ -1,0 +1,13 @@
+.git
+.pnpm-store
+docs
+reference
+data
+
+**/node_modules
+**/.next
+**/out
+**/pb_public
+**/pb_data
+
+src/server/.env

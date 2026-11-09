@@ -1,0 +1,7 @@
+{{define "subject"}}[JSERD] All reviews completed — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+All reviews for submission {{.SubmissionID}} — {{.Title}} are complete.
+Please assess the set of reviews and proceed with editorial action in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>All reviews for submission <strong>{{.SubmissionID}} — {{.Title}}</strong> are complete.</p><p>Please assess the set of reviews and proceed with editorial action in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

@@ -1,0 +1,7 @@
+{{define "subject"}}[JSERD] Review submitted — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+A review was submitted by {{.ReviewerName}} for submission {{.SubmissionID}} — {{.Title}}.
+Please assess the review and proceed with editorial action in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>A review was submitted by {{.ReviewerName}} for submission <strong>{{.SubmissionID}} — {{.Title}}</strong>.</p><p>Please assess the review and proceed with editorial action in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

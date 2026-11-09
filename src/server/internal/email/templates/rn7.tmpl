@@ -1,0 +1,8 @@
+{{define "subject"}}[JSERD] Review submission deadline — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+The deadline to submit the review for submission {{.SubmissionID}} — {{.Title}} is near.
+The deadline to submit the review is {{.Deadline}}.
+Please submit the review in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>The deadline to submit the review for submission <strong>{{.SubmissionID}} — {{.Title}}</strong> is near.</p><p>The deadline to submit the review is {{.Deadline}}.</p><p>Please submit the review in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

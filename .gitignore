@@ -1,0 +1,17 @@
+.pnpm-store/
+/.runtime/
+
+# Temporary audit credentials and audit working files.
+/.env
+/.env.audit
+/.scratch/live-audit/cookies.txt
+/.scratch/live-audit/raw/
+
+# Git worktree admin files for agent runs.
+.claude/worktrees/
+
+# Copyrighted source texts saved for the PG2 monograph.
+/.scratch/pg2-monografia/fontes/
+
+# Local source material and editorial exports.
+/data/

@@ -1,0 +1,37 @@
+=== RN2 ===
+[JSERD] Invite response deadline expired — Artigo
+---TEXT---
+Hello, Editora.
+
+The deadline to answer the review invite sent to Revisora Silva for submission 42 — Artigo expired.
+The deadline to answer the invite was 10/06/2026.
+Please check the assignment and proceed with editorial action in OJS: https://ojs.example.test/42
+---HTML---
+<p>Hello, Editora.</p><p>The deadline to answer the review invite sent to Revisora Silva for submission <strong>42 — Artigo</strong> expired.</p><p>The deadline to answer the invite was 10/06/2026.</p><p>Please check the assignment and proceed with editorial action in <a href="https://ojs.example.test/42">OJS</a>.</p>
+=== RN3 ===
+[JSERD] Review submitted — Artigo
+---TEXT---
+Hello, Editora.
+
+A review was submitted by Revisora Silva for submission 42 — Artigo.
+Please assess the review and proceed with editorial action in OJS: https://ojs.example.test/42
+---HTML---
+<p>Hello, Editora.</p><p>A review was submitted by Revisora Silva for submission <strong>42 — Artigo</strong>.</p><p>Please assess the review and proceed with editorial action in <a href="https://ojs.example.test/42">OJS</a>.</p>
+=== RN4 ===
+[JSERD] All reviews completed — Artigo
+---TEXT---
+Hello, Editora.
+
+All reviews for submission 42 — Artigo are complete.
+Please assess the set of reviews and proceed with editorial action in OJS: https://ojs.example.test/42
+---HTML---
+<p>Hello, Editora.</p><p>All reviews for submission <strong>42 — Artigo</strong> are complete.</p><p>Please assess the set of reviews and proceed with editorial action in <a href="https://ojs.example.test/42">OJS</a>.</p>
+=== RN5 ===
+[JSERD] Sign of new file after review — Artigo
+---TEXT---
+Hello, Editora.
+
+A sign of a new file was found in submission 42 — Artigo after a review was completed. The available data do not confirm the author, the file type, or the submission of a revised version.
+Please check the files and proceed with editorial action in OJS: https://ojs.example.test/42
+---HTML---
+<p>Hello, Editora.</p><p>A sign of a new file was found in submission <strong>42 — Artigo</strong> after a review was completed. The available data do not confirm the author, the file type, or the submission of a revised version.</p><p>Please check the files and proceed with editorial action in <a href="https://ojs.example.test/42">OJS</a>.</p>

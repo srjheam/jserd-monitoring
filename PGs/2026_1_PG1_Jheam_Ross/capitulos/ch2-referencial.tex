@@ -1,0 +1,80 @@
+% ==============================================================================
+% TCC - Jheam Storch Ross
+% Capítulo 2 - Fundamentação Teórica e Tecnologias Utilizadas
+% ==============================================================================
+\chapter{Fundamentação Teórica e Tecnologias Utilizadas}
+\label{sec-fundteo}
+
+Este capítulo apresenta os conceitos e as tecnologias relacionados ao sistema proposto. A Seção~\ref{sec-fundteo-comunicacao} trata da comunicação científica e da avaliação editorial. A Seção~\ref{sec-fundteo-ojs} descreve o OJS. A Seção~\ref{sec-fundteo-monitoramento} apresenta os fundamentos do monitoramento adotado no trabalho. A Seção~\ref{sec-fundteo-tecnologias} resume as tecnologias utilizadas. Por fim, a Seção~\ref{sec-fundteo-conclusao} reúne as considerações finais do capítulo.
+
+\section{Comunicação científica e processo editorial}
+\label{sec-fundteo-comunicacao}
+
+A comunicação científica permite registrar, avaliar e divulgar os resultados produzidos por pesquisadores. Os periódicos participam desse processo ao selecionar trabalhos, organizar sua avaliação e manter um registro público da produção científica \cite{meadows1999comunicacao,mueller2000periodico}.
+
+A avaliação por pares envolve autores, editores e revisores. Os autores submetem o manuscrito e respondem às solicitações de alteração. Os editores verificam a adequação da submissão, escolhem revisores, acompanham os pareceres e tomam decisões editoriais. Os revisores analisam o trabalho e apresentam sua recomendação. Como essas atividades ocorrem em momentos diferentes e possuem prazos próprios, a coordenação do processo depende do acompanhamento das tarefas pendentes.
+
+Neste trabalho, monitoramento editorial significa observar os registros desse processo para apontar pendências e prazos. O sistema proposto não avalia o conteúdo dos artigos nem toma decisões sobre sua publicação. Sua função é organizar as informações que apoiem o trabalho dos responsáveis editoriais.
+
+\section{Open Journal Systems}
+\label{sec-fundteo-ojs}
+
+O OJS é um sistema de código aberto desenvolvido pelo \textit{Public Knowledge Project} para administrar e publicar periódicos científicos \cite{willinsky2005ojs}. Seu fluxo contempla submissão, avaliação, edição e produção. A plataforma registra usuários, atribuições, arquivos, datas e decisões relacionados a cada submissão \cite{pkp2022learning}.
+
+Durante a avaliação, um editor pode convidar um ou mais revisores. Cada convite possui um prazo e um estado de resposta; enquanto não houver aceite ou recusa, o convite permanece sem resposta. Quando o convite é aceito, passa a existir também um prazo para entrega da avaliação. O editor acompanha as avaliações e decide se o manuscrito será aceito, rejeitado ou devolvido aos autores para alterações. Esse fluxo pode conter várias avaliações e rodadas, o que impede tratá-lo como uma sequência única e linear.
+
+O OJS oferece páginas administrativas, relatórios e uma API REST. A versão 3.2.1.2, utilizada pelo JSERD, não disponibiliza todos os dados necessários por uma única interface. Por isso, a solução proposta combinará dados da API com relatórios exportados pelos plugins de artigos, revisões e visualizações. Esses dados serão convertidos para um modelo interno comum e registrados antes da aplicação das regras de monitoramento.
+
+A integração será externa. O sistema realizará somente operações de leitura nas interfaces autorizadas e manterá seus próprios registros. Essa decisão reduz a interferência sobre o periódico em produção. Em contrapartida, as funções de monitoramento ficam limitadas aos dados que a versão instalada consegue fornecer.
+
+\subsection{Contratos de integração e adaptação}
+\label{sec-fundteo-adaptacao}
+
+A API, os relatórios e os plugins constituem contratos externos versionados. Uma adaptação deve verificar a versão do OJS, a disponibilidade dos plugins de relatórios, as permissões para API e relatórios, a configuração dos papéis editoriais e o formato esperado dos relatórios. O isolamento desses contratos em um adaptador permite preservar o modelo interno quando uma fonte muda, mas não assegura retrocompatibilidade.
+
+Em julho de 2026, a versão LTS estável divulgada pelo PKP é o OJS 3.5 \cite{pkp2026download}. Não foi encontrada na documentação oficial consultada uma garantia de retrocompatibilidade da API entre as versões 3.2 e 3.5. Assim, a compatibilidade com versões recentes permanece uma questão de pesquisa.
+
+Na monografia, a comparação deverá investigar quais endpoints, campos e mecanismos de autenticação permanecem compatíveis; quais permissões mínimas permitem acessar API e relatórios. Também serão examinadas as diferenças entre o núcleo da plataforma e plugins, a validação necessária após uma atualização, a representação de eventos descontinuados e as verificações que devem compor o guia de adaptação.
+
+\section{Monitoramento de pendências e prazos}
+\label{sec-fundteo-monitoramento}
+
+Uma coleta representa o estado observado do processo editorial em determinado momento. Após validar e normalizar os dados recebidos, o sistema armazena um \textit{snapshot}, o estado do OJS no instante da coleta. A comparação entre o \textit{snapshot} atual e o anterior permite identificar mudanças, como o aceite de um convite ou a entrega de uma avaliação.
+
+Um \emph{evento de transição} registra uma mudança entre dois \textit{snapshots}. Uma \emph{condição temporal} é uma regra avaliada a partir da data corrente, da data-limite e do estado da atividade. Quando satisfeita, ela produz uma ocorrência temporal, como um lembrete ou um atraso. Uma \emph{pendência} representa uma condição editorial ainda não resolvida e pode permanecer presente em várias coletas.
+
+Uma regra de monitoramento associa um evento ou uma condição à ação esperada e aos destinatários. A \emph{notificação} é a mensagem produzida a partir dessa associação. A \emph{tentativa de envio} registra o resultado da entrega da notificação a um destinatário, com a versão do modelo, o estado do envio e eventual erro. Assim, a identificação da situação, a produção da mensagem e sua entrega permanecem operações distintas.
+
+A chave de idempotência de um evento de transição combina o tipo do evento, a entidade afetada e a ocorrência da mudança. Para uma ocorrência temporal, a chave combina a entidade, o tipo de condição e a data-limite que originou o lembrete ou atraso. Em ambos os casos, a regra e o destinatário distinguem cada notificação. Para os informes consolidados, a janela periódica identifica a execução, e cada submissão aparece uma vez nessa janela com suas pendências. As tentativas de envio permanecem vinculadas à notificação ou ao informe correspondente, o que permite auditar falhas sem recriar a situação editorial.
+
+As notificações destinadas às editoras-chefes exigem uma consulta consolidada. O sistema reunirá submissões que apresentem cada tipo de pendência. A mesma base de dados será usada para gerar a exportação de dados solicitada pela CEES.
+
+\section{Tecnologias Utilizadas}
+\label{sec-fundteo-tecnologias}
+
+A solução será composta por um serviço responsável pela coleta, pelas regras e pela persistência e por uma aplicação web para acompanhamento. Os componentes serão implantados em um único servidor.
+
+\subsection{Go, PocketBase e SQLite}
+
+Go será utilizado no serviço de coleta e processamento. A linguagem possui tipagem estática, compilação para código nativo e bibliotecas para comunicação HTTP e testes \cite{golangdocs}. Essas características são adequadas a um serviço que executará coletas periódicas e poderá ser distribuído como um único programa executável.
+
+PocketBase será usado como base do serviço. Ele reúne banco de dados SQLite, autenticação, API e suporte a extensões escritas em Go \cite{pocketbasedocs}. O SQLite mantém os dados em arquivo e oferece transações sem exigir um processo de banco de dados separado \cite{sqliteabout}. Serão armazenados ciclos de coleta, \textit{snapshots}, eventos, notificações e configurações não sigilosas.
+
+\subsection{Next.js}
+
+Next.js será utilizado na aplicação web. O projeto será exportado como uma aplicação estática, formada por arquivos HTML, CSS e JavaScript que podem ser servidos pelo próprio serviço \cite{nextjsstatic}. A interface permitirá consultar pendências consolidadas sem acessar diretamente o OJS.
+
+\subsection{SMTP}
+
+As notificações serão enviadas por meio do \textit{Simple Mail Transfer Protocol} (SMTP), protocolo empregado na transferência de mensagens de correio eletrônico \cite{rfc5321}. Durante os testes, o transporte será substituído por uma implementação controlada, sem entrega a destinatários reais.
+
+\subsection{Docker Compose}
+
+Docker Compose permite descrever a execução de aplicações compostas por contêineres, suas configurações e seus volumes persistentes \cite{dockercompose}. No projeto, será usado para a implantação do sistema em um único servidor. O banco de dados e os arquivos necessários à auditoria serão mantidos em volumes persistentes do contêiner.
+
+\section{Considerações Finais}
+\label{sec-fundteo-conclusao}
+
+O fluxo editorial reúne atividades realizadas por diferentes participantes e em prazos distintos. O OJS registra essas atividades, mas as demandas do JSERD exigem que os dados sejam consultados, relacionados e apresentados conforme as necessidades de acompanhamento do periódico.
+
+A solução proposta realizará esse tratamento fora do OJS. Coletas sucessivas permitirão identificar eventos de transição; condições temporais produzirão ocorrências de lembrete ou atraso; condições não resolvidas serão apresentadas como pendências; e o registro separado de notificações e tentativas de envio permitirá controlar duplicidades. Consultas consolidadas apoiarão as editoras-chefes e o relatório anual.

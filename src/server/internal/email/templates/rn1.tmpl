@@ -1,0 +1,7 @@
+{{define "subject"}}[JSERD] Review invite answered — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+The review invite for submission {{.SubmissionID}} — {{.Title}} was answered by {{.ReviewerName}}.
+Please check the response and proceed with editorial action in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>The review invite for submission <strong>{{.SubmissionID}} — {{.Title}}</strong> was answered by {{.ReviewerName}}.</p><p>Please check the response and proceed with editorial action in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

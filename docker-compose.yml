@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+    image: tcc-jserd-monitor:local
+    ports:
+      - "8090:8090"
+    env_file:
+      - ./src/server/.env
+    volumes:
+      - pb_data:/app/pb_data
+      - ./src/server/.env:/app/.env:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8090/_/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  pb_data:

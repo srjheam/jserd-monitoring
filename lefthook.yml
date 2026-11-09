@@ -1,0 +1,44 @@
+pre-commit:
+  parallel: true
+  commands:
+    server-complexity:
+      root: "src/server/"
+      glob: "*.go"
+      run: env -u GIT_DIR -u GIT_INDEX_FILE -u GIT_WORK_TREE -u GIT_PREFIX golangci-lint run --config .golangci.yml
+    server-coverage:
+      root: "src/server/"
+      glob: "*.go"
+      run: go test ./... -coverprofile=cover.out && go run github.com/vladopajic/go-test-coverage/v2 --config=.testcoverage.yml
+    client-complexity:
+      root: "src/client/"
+      glob: "*.{ts,tsx}"
+      run: pnpm exec biome check .
+    client-typecheck:
+      root: "src/client/"
+      glob: "*.{ts,tsx}"
+      run: pnpm exec tsc --noEmit
+    client-cycles:
+      root: "src/client/"
+      glob: "*.{ts,tsx}"
+      run: pnpm exec madge --circular --extensions ts,tsx src/
+    client-coverage:
+      root: "src/client/"
+      glob: "*.{ts,tsx}"
+      run: pnpm vitest run --coverage
+
+# Runs by hand only: `lefthook run gauntlet`. No commit triggers it, and no
+# `pre-push` hook exists, so nothing runs it without a person choosing to.
+gauntlet:
+  commands:
+    browser-suite:
+      root: "src/client/"
+      run: pnpm test:browser
+    client-mutation:
+      root: "src/client/"
+      run: pnpm test:mutation
+    server-mutation:
+      root: "src/server/"
+      run: ./run-mutation-testing.sh
+    server-mutation-sites:
+      root: "src/server/"
+      run: ./check-mutation-sites.sh

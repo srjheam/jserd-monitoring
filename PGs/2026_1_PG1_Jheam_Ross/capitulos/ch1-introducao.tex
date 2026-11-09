@@ -1,0 +1,101 @@
+% ==============================================================================
+% TCC - Jheam Storch Ross
+% Capítulo 1 - Introdução
+% ==============================================================================
+\chapter{Introdução}
+\label{sec-intro}
+
+Periódicos científicos organizam a avaliação, a seleção e a publicação dos resultados de pesquisa. Nesse processo, editores acompanham submissões, designam revisores, controlam prazos e comunicam decisões a autores e avaliadores \cite{meadows1999comunicacao,mueller2000periodico}. Plataformas de gestão editorial apoiam essas atividades ao reunir documentos, participantes e registros do fluxo de publicação.
+
+O \textit{Open Journal Systems} (OJS) é uma plataforma de código aberto para a gestão e a publicação de periódicos científicos. O sistema abrange as etapas de submissão, avaliação, edição e publicação e mantém os registros produzidos durante o processo \cite{willinsky2005ojs,pkp2022learning}. A disponibilidade desses registros, contudo, não elimina a necessidade de acompanhar continuamente prazos e situações que exigem alguma ação editorial.
+
+Este trabalho parte de uma demanda da equipe editorial do \textit{Journal on Software Engineering Research and Development} (JSERD), periódico que utiliza o OJS. O acompanhamento das submissões exige consultas recorrentes ao sistema e o envio manual de comunicações. Entre as situações de interesse estão convites de revisão sem resposta, avaliações atrasadas e submissões sem editor ou revisor. Também é necessário reunir dados para o relato anual apresentado à Assembleia da Comissão Especial de Engenharia de Software (CEES).
+
+O problema investigado pode ser formulado pela seguinte questão: \emph{como automatizar o monitoramento editorial no OJS, no contexto do JSERD, sem interferir no fluxo editorial mantido pela plataforma?} Propõe-se, portanto, desenvolver um sistema externo de apoio ao monitoramento editorial do JSERD. O sistema coletará dados disponibilizados pelo OJS, manterá o histórico necessário para reconhecer mudanças e prazos, enviará notificações por e-mail e apresentará pendências aos seus editores e editoras-chefes. A solução não alterará submissões ou decisões no OJS, que permanecerá como sistema responsável pelo fluxo editorial.
+
+O estudo de caso será restrito ao JSERD. Seu foco é o monitoramento do fluxo editorial do periódico. Serão usadas como fontes as demandas das editoras-chefes, a documentação e o código do OJS, os dados coletados pelo sistema, os testes e a validação com as editoras-chefes. O código-fonte e um guia de adaptação fornecerão apenas uma base documentada para adaptações futuras a outros periódicos em OJS.
+
+\section{Motivação e Justificativa}
+\label{sec-intro-motjus}
+
+O OJS concentra os dados do processo editorial, mas o acompanhamento das atividades ainda demanda trabalho manual. A equipe precisa consultar submissões em diferentes etapas, verificar datas e estados e, então, entrar em contato com os participantes. Além disso, as editoras-chefes precisam supervisionar o andamento do periódico. Essa rotina ocupa tempo que poderia ser dedicado a atividades editoriais que reduziriam as próprias pendências do JSERD.
+
+As demandas fornecidas pela equipe do JSERD definem situações específicas a serem notificadas. Editores devem ser informados sobre respostas a convites de revisão, vencimento de prazos, entrega de avaliações, conclusão de rodadas de avaliação e envio de versões revisadas. Revisores devem receber lembretes e avisos de atraso. Editoras-chefes precisam consultar uma visão consolidada de submissões sem editor ou revisor e de outras pendências. Além disso, cada comunicação requer um modelo de e-mail, e o sistema deve apoiar a consolidação dos dados usados no relato anual à Assembleia da CEES.
+
+Essas situações não podem ser identificadas apenas com uma consulta única ao periódico. Algumas representam mudanças entre duas coletas, como o aceite de um convite; outras dependem da data corrente, como um prazo próximo do vencimento. Há ainda pendências que permanecem até serem resolvidas, como uma submissão sem editor. Por isso, a solução deve combinar coleta periódica, normalização dos dados, aplicação das regras de monitoramento, produção de notificações e registro das tentativas de envio.
+
+O trabalho é relevante por aplicar conhecimentos de Engenharia de Software à solução de um problema real. Seu desenvolvimento envolve levantamento de requisitos, integração entre sistemas, modelagem de dados, detecção de eventos, envio de mensagens, projeto de interface e testes. Como resultado, espera-se reduzir o esforço necessário para identificar pendências e fornecer aos editores informações mais diretas para o acompanhamento do periódico. A automação será limitada às atividades de monitoramento e comunicação, sem substituir decisões editoriais.
+
+\section{Objetivos do Trabalho}
+\label{sec-intro-obj}
+
+O objetivo geral deste trabalho é desenvolver um sistema externo ao OJS para apoiar o monitoramento do fluxo editorial do JSERD por meio da identificação de eventos e prazos, do envio de notificações e da consolidação das informações.
+
+Esse objetivo geral é detalhado nos seguintes objetivos específicos:
+
+\begin{enumerate}[label=\roman*.]
+    \item especificar os requisitos do sistema a partir das demandas das editoras-chefes;
+    \item projetar e implementar a coleta e a normalização dos dados disponibilizados pelo OJS, o armazenamento de seus estados sucessivos e a publicação de eventos;
+    \item implementar o consumo de eventos, o envio de notificações por e-mail e uma interface para acompanhamento de coletas, eventos, notificações e consolidado de pendências;
+    \item produzir a exportação de dados para o relato anual do JSERD à Assembleia da CEES;
+    \item implantar o sistema para uso no JSERD; e
+    \item documentar as limitações da integração e produzir um guia para orientar a adaptação da solução a outra instalação OJS.
+\end{enumerate}
+
+\section{Método de Desenvolvimento}
+\label{sec-intro-met}
+
+O trabalho será conduzido de acordo com as seguintes atividades. Quando uma atividade contribui diretamente para um objetivo específico da Seção~\ref{sec-intro-obj}, esse objetivo aparece entre parênteses.
+
+\begin{enumerate}[label=\roman*.]
+    \item \textbf{Revisão bibliográfica:} estudo sobre comunicação científica, fluxo editorial, OJS e conceitos técnicos necessários ao desenvolvimento da solução;
+    \item \textbf{Levantamento e análise de requisitos:} análise das demandas fornecidas pela equipe do JSERD e manutenção da rastreabilidade entre os eventos esperados, suas fontes, condições e destinatários (objetivo i);
+    \item \textbf{Estudo das fontes de dados:} identificação dos dados disponíveis na API REST e nos relatórios do OJS 3.2.1.2, classificação das capacidades como completas, parciais, ausentes ou pendentes e comparação documental com a versão OJS 3.5 LTS (objetivos ii e vi);
+    \item \textbf{Projeto da solução:} definição da arquitetura, do modelo de dados, das regras de monitoramento, das interfaces e dos frameworks de implantação (objetivos ii a iv);
+    \item \textbf{Implementação incremental:} desenvolvimento da coleta, normalização, persistência, identificação de eventos, notificações, interface de acompanhamento e exportação do relatório anual (objetivos ii a iv);
+    \item \textbf{Testes, implantação e validação:} execução de testes unitários e de integração, uso de dados controlados para verificar as situações previstas, implantação do sistema e apresentação da solução aos responsáveis editoriais para conferir sua adequação às demandas (objetivos ii a v);
+    \item \textbf{Guia de adaptação:} documentação dos contratos externos, pré-requisitos, capacidades disponíveis e verificações necessárias, com base nos resultados observados no JSERD (objetivo vi); e
+    \item \textbf{Elaboração da monografia:} documentação dos fundamentos, das decisões de projeto, do sistema desenvolvido, das limitações e dos resultados da avaliação.
+\end{enumerate}
+
+O desenvolvimento seguirá uma abordagem incremental. Cada parte será testada antes da implementação das funções que dependem dela. Dados de teste serão mantidos separados dos dados do periódico, e credenciais ou informações pessoais serão anonimizadas.
+
+\section{Cronograma}
+\label{sec-intro-crono}
+
+As atividades previstas são:
+
+\begin{itemize}
+    \item \textbf{A1 - Domínio:} estudar OJS e JSERD e consolidar os requisitos;
+    \item \textbf{A2 - Integração:} definir a arquitetura e implementar a coleta e o tratamento dos dados do OJS;
+    \item \textbf{A3 - Notificações:} implementar as regras, os modelos de e-mail e o envio por SMTP;
+    \item \textbf{A4 - Anteprojeto:} escrever, revisar e entregar o anteprojeto;
+    \item \textbf{A5 - Validação inicial:} executar testes, implantar uma versão e validar o primeiro conjunto de funções com as editoras-chefes;
+    \item \textbf{A6 - Interface de acompanhamento:} alinhar os requisitos com a orientadora e desenvolver uma interface interativa para consulta consolidada do periódico;
+    \item \textbf{A7 - Relato anual:} obter e analisar o modelo do relato anual e implementar a exportação dos dados no padrão da CEES;
+    \item \textbf{A8 - Avaliação:} executar os testes finais e validar a solução com as editoras-chefes; e
+    \item \textbf{A9 - Monografia:} escrever, revisar e entregar a monografia.
+\end{itemize}
+
+\begin{table}[htb]
+\caption{Cronograma de execução em 2026.}
+\label{tbl-intro-cronograma}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|c|}\hline
+\textbf{Ativ.} & \textbf{Jan.} & \textbf{Fev.} & \textbf{Mar.} & \textbf{Abr.} & \textbf{Mai.} & \textbf{Jun.} & \textbf{Jul.} & \textbf{Ago.} & \textbf{Set.} & \textbf{Out.} & \textbf{Nov.} & \textbf{Dez.} \\\hline
+A1 & X & X & X &   &   &   &   &   &   &   &   &   \\\hline
+A2 &   &   & X & X & X &   &   &   &   &   &   &   \\\hline
+A3 &   &   &   &   & X & X &   &   &   &   &   &   \\\hline
+A4 &   &   &   &   &   & X & X &   &   &   &   &   \\\hline
+A5 &   &   &   &   &   &   & X & X &   &   &   &   \\\hline
+A6 &   &   &   &   &   &   & X & X &   &   &   &   \\\hline
+A7 &   &   &   &   &   &   &   & X & X &   &   &   \\\hline
+A8 &   &   &   &   &   &   &   &   & X & X & X &   \\\hline
+A9 &   &   &   &   &   &   &   &   & X & X & X & X \\\hline
+\end{tabular}
+\legend{Fonte: elaboração própria.}
+\end{table}
+
+Uma versão parcial da monografia será encaminhada até o fim de setembro, e uma versão completa, até o fim de outubro. Dessa forma, haverá tempo hábil para a revisão dos textos pela orientadora.

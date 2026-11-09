@@ -1,0 +1,14 @@
+profile: cover.out
+
+threshold:
+  package: 80
+
+override:
+  # Wiring, exercised by the browser suite rather than by Go tests.
+  - path: ^main\.go$
+    threshold: 0
+  # Replaying every migration is what this package's tests check. It sits at
+  # 75% today; it rises to 90 in a later pass, once the rework effort
+  # reaches it.
+  - path: ^migrations$
+    threshold: 75

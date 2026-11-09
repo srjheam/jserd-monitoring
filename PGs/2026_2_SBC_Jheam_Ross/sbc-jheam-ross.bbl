@@ -1,0 +1,108 @@
+\begin{thebibliography}{}
+
+\bibitem[{Brasil} 2018]{lgpd}
+{Brasil} (2018).
+\newblock Lei n. 13.709, de 14 de agosto de 2018: Lei geral de proteção de
+  dados pessoais ({LGPD}).
+\newblock Arts. 6, 7, 15, 16, and 46.
+  \url{https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm}.
+  Accessed: 23 October 2026.
+
+\bibitem[{Caddy} nd]{caddy}
+{Caddy} (n.d.).
+\newblock {\em Reverse proxy quick-start}.
+\newblock \url{https://caddyserver.com/docs/quick-starts/reverse-proxy}.
+  Accessed: 23 October 2026.
+
+\bibitem[Hohpe and Woolf nd]{idemreceiver}
+Hohpe, G. and Woolf, B. (n.d.).
+\newblock Idempotent receiver.
+\newblock Enterprise Integration Patterns.
+\newblock
+  \url{https://www.enterpriseintegrationpatterns.com/patterns/messaging/IdempotentReceiver.html}.
+  Accessed: 25 October 2026.
+
+\bibitem[{JSERD} nd]{jserd}
+{JSERD} (n.d.).
+\newblock About the journal.
+\newblock \url{https://journals-sol.sbc.org.br/index.php/jserd/about}.
+\newblock Accessed: 20 October 2026.
+
+\bibitem[Klensin 2008]{smtp}
+Klensin, J. (2008).
+\newblock Simple mail transfer protocol.
+\newblock RFC 5321, Internet Engineering Task Force.
+\newblock \url{https://www.rfc-editor.org/rfc/rfc5321}. Accessed: 21 October
+  2026.
+
+\bibitem[Labio and Garcia-Molina 1996]{labio1996}
+Labio, W.~J. and Garcia-Molina, H. (1996).
+\newblock Efficient snapshot differential algorithms for data warehousing.
+\newblock In {\em Proceedings of the 22nd International Conference on Very
+  Large Data Bases}, pages 63--74. Morgan Kaufmann.
+\newblock \url{https://www.vldb.org/conf/1996/P063.PDF}. Accessed: 25 October
+  2026.
+
+\bibitem[Lopes and Oliveira 2015]{lopes2015}
+Lopes, P. and Oliveira, J.~L. (2015).
+\newblock An automated real-time integration and interoperability framework for
+  bioinformatics.
+\newblock {\em BMC Bioinformatics}, 16:328.
+\newblock \url{https://doi.org/10.1186/s12859-015-0761-3}. Accessed: 26 October
+  2026.
+
+\bibitem[{PocketBase} nd]{pocketbase}
+{PocketBase} (n.d.).
+\newblock {\em Introduction}.
+\newblock \url{https://pocketbase.io/docs/}. Accessed: 21 October 2026.
+
+\bibitem[{Public Knowledge Project} 2020]{pkplib}
+{Public Knowledge Project} (2020).
+\newblock {PKP Web Application Library}, version 3.2.1-2.
+\newblock Source code.
+\newblock \url{https://github.com/pkp/pkp-lib/tree/3_2_1-2}. Accessed: 4
+  November 2026.
+
+\bibitem[{Public Knowledge Project} nda]{pkpguia}
+{Public Knowledge Project} (n.d.a).
+\newblock {\em Learning {OJS} 3.2: A Visual Guide to {Open Journal Systems}}.
+\newblock \url{https://docs.pkp.sfu.ca/learning-ojs/3.2/en/}. Accessed: 25
+  September 2026.
+
+\bibitem[{Public Knowledge Project} ndb]{pkpworkflow}
+{Public Knowledge Project} (n.d.b).
+\newblock {\em Learning {OJS} 3.2: Workflow Settings}.
+\newblock \url{https://docs.pkp.sfu.ca/learning-ojs/3.2/en/settings-workflow}.
+  Accessed: 23 October 2026.
+
+\bibitem[{Public Knowledge Project} ndc]{pkpapi}
+{Public Knowledge Project} (n.d.c).
+\newblock {\em {Open Journal Systems}: {API} Reference, version 3.2.x}.
+\newblock Official specification for version 3.2.1-2.
+  \url{https://github.com/pkp/ojs/blob/3_2_1-2/docs/dev/swagger-source.json}.
+  Accessed: 21 October 2026.
+
+\bibitem[Richardson nd]{outbox}
+Richardson, C. (n.d.).
+\newblock Pattern: Transactional outbox.
+\newblock
+  \url{https://microservices.io/patterns/data/transactional-outbox.html}.
+  Accessed: 25 October 2026.
+
+\bibitem[{SQLite} nd]{sqlite}
+{SQLite} (n.d.).
+\newblock {\em About {SQLite}}.
+\newblock \url{https://www.sqlite.org/about.html}. Accessed: 23 October 2026.
+
+\bibitem[{The Go Authors} nd]{golang}
+{The Go Authors} (n.d.).
+\newblock {\em Documentation}.
+\newblock \url{https://go.dev/doc/}. Accessed: 23 October 2026.
+
+\bibitem[{Vercel} nd]{nextestatico}
+{Vercel} (n.d.).
+\newblock {\em How to create a static export of your {Next.js} application}.
+\newblock \url{https://nextjs.org/docs/app/guides/static-exports}. Accessed: 21
+  October 2026.
+
+\end{thebibliography}

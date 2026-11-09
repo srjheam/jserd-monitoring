@@ -1,0 +1,47 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - ineffassign
+    - unused
+    - dupl
+    - funlen
+    - nestif
+    - mnd
+    - goconst
+    - errorlint
+    - nilerr
+    - godot
+    - gocritic
+    - prealloc
+    - forcetypeassert
+    - varnamelen
+    - revive
+    - gocyclo
+  settings:
+    gocyclo:
+      min-complexity: 10
+    funlen:
+      lines: 40
+      statements: 30
+    nestif:
+      min-complexity: 3
+    revive:
+      rules:
+        - name: flag-parameter
+        - name: early-return
+        - name: confusing-naming
+        - name: var-naming
+  exclusions:
+    rules:
+      - path: _test\.go
+        linters:
+          - gocyclo
+
+formatters:
+  enable:
+    - gofumpt

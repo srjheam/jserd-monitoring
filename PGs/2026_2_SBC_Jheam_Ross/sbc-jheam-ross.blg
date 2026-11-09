@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2025/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: sbc-jheam-ross.aux
+The style file: sbc.bst
+Database file #1: sbc-jheam-ross.bib
+You've used 16 entries,
+            1935 wiz_defined-function locations,
+            549 strings with 6300 characters,
+and the built_in function-call counts, 4557 in all, are:
+= -- 461
+> -- 130
+< -- 18
++ -- 42
+- -- 38
+* -- 298
+:= -- 851
+add.period$ -- 55
+call.type$ -- 16
+change.case$ -- 91
+chr.to.int$ -- 14
+cite$ -- 16
+duplicate$ -- 205
+empty$ -- 318
+format.name$ -- 60
+if$ -- 866
+int.to.chr$ -- 3
+int.to.str$ -- 0
+missing$ -- 2
+newline$ -- 89
+num.names$ -- 48
+pop$ -- 67
+preamble$ -- 1
+purify$ -- 99
+quote$ -- 0
+skip$ -- 172
+stack$ -- 0
+substring$ -- 227
+swap$ -- 26
+text.length$ -- 2
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 96
+warning$ -- 0
+while$ -- 36
+width$ -- 0
+write$ -- 210

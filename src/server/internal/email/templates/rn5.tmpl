@@ -1,0 +1,7 @@
+{{define "subject"}}[JSERD] Sign of new file after review — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+A sign of a new file was found in submission {{.SubmissionID}} — {{.Title}} after a review was completed. The available data do not confirm the author, the file type, or the submission of a revised version.
+Please check the files and proceed with editorial action in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>A sign of a new file was found in submission <strong>{{.SubmissionID}} — {{.Title}}</strong> after a review was completed. The available data do not confirm the author, the file type, or the submission of a revised version.</p><p>Please check the files and proceed with editorial action in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

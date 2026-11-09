@@ -1,0 +1,18 @@
+# Reverse proxy for the VM stack. Terminates TLS via the HTTP-01 challenge and
+# renews automatically. Set CADDY_HOSTNAMES to add a second hostname (space
+# separated) once the university subdomain is granted, e.g.:
+#   CADDY_HOSTNAMES="jserd.duckdns.org jserd.ufes.br"
+#
+# For local testing, set CADDY_HOSTNAMES to a bare port (e.g. ":80").
+# A site address with no hostname has nothing to request a certificate for,
+# so Caddy serves it over plain HTTP with automatic HTTPS disabled.
+{$CADDY_HOSTNAMES:jserd.duckdns.org} {
+	route {
+		# The admin panel is never opened by chief editors; they authenticate
+		# through /api/collections/_superusers/auth-with-password. Block only
+		# the admin panel path prefix so the API keeps working.
+		respond /_/* 404
+
+		reverse_proxy app:8090
+	}
+}

@@ -1,0 +1,8 @@
+{{define "subject"}}[JSERD] Invite response deadline — {{.Title}}{{end}}
+{{define "text"}}Hello, {{.RecipientName}}.
+
+The deadline to answer the invite for submission {{.SubmissionID}} — {{.Title}} is near.
+The deadline to answer the invite is {{.Deadline}}.
+Please answer the invite in OJS: {{.OJSURL}}
+{{end}}
+{{define "html"}}<p>Hello, {{.RecipientName}}.</p><p>The deadline to answer the invite for submission <strong>{{.SubmissionID}} — {{.Title}}</strong> is near.</p><p>The deadline to answer the invite is {{.Deadline}}.</p><p>Please answer the invite in <a href="{{.OJSURL}}">OJS</a>.</p>{{end}}

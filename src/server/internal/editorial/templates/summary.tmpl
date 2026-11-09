@@ -1,0 +1,15 @@
+{{define "subject"}}[JSERD] Editorial summary — {{.Period}}{{end}}
+{{define "text"}}Dear editors-in-chief,
+
+Here is the editorial summary, generated on {{.Period}}.
+{{range .Articles}}
+{{.Label}}{{if .URL}} — {{.URL}}{{end}}
+{{range .Bullets}}- {{.}}
+{{end}}{{end}}
+Kind regards,
+JSERD Editorial Team
+{{end}}
+{{define "html"}}<p>Dear editors-in-chief,</p>
+<p>Here is the editorial summary, generated on {{.Period}}.</p>
+{{range .Articles}}<section><h2>{{.Label}}</h2>{{if .URL}}<p><a href="{{.URL}}">Open submission in OJS</a></p>{{end}}<ul>{{range .Bullets}}<li>{{.}}</li>{{end}}</ul></section>{{end}}
+<p>Kind regards,<br>JSERD Editorial Team</p>{{end}}
