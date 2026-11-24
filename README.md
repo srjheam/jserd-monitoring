@@ -1,4 +1,122 @@
-# Automação do Monitoramento para Curadoria no Open Journal Systems: Um Estudo de Caso no JSERD
+# JSERD Monitoring: An External Tool for Editorial Oversight in OJS
+
+The Brazilian Computer Society (SBC) publishes the Journal of Software
+Engineering Research and Development (JSERD), which uses Open Journal Systems
+(OJS) 3.2.1. This version of OJS has limitations that make it hard
+for the chief editors to monitor the submissions. To support the chief
+editors in this task, and to alert editors and reviewers so that the review
+process moves faster, this work developed JSERD Monitoring, a tool external
+to OJS. The tool collects data from OJS at regular intervals, detects events
+and deadlines, sends email notifications to editors and reviewers, and shows
+the chief editors the submissions that need attention. This paper presents
+the requirements, the architecture, and the features of the tool.
+
+## Paper
+
+The paper "JSERD Monitoring: An External Tool for Editorial Oversight in OJS"
+presents the requirements, the architecture, and the features of the tool:
+[`sbc-jheam-ross.pdf`](PGs/2026_2_SBC_Jheam_Ross/sbc-jheam-ross.pdf).
+
+## Specification
+
+This section is the specification of JSERD Monitoring. It uses the same
+IDs as the paper (`FR`, `NFR`, and `R`).
+
+### Users
+
+- **Chief editors** use the dashboard. They receive the weekly editorial
+  summary and the notification of R16. In OJS, their role is *journal editor*.
+- **Assigned editors** receive the notifications of R1 to R5. In OJS, their
+  role is *associate editor*.
+- **Reviewers** receive the notifications of R6 to R8.
+
+### Requirements
+
+The requirements are in Table 1, in [Section 3.1 of the paper](PGs/2026_2_SBC_Jheam_Ross/sbc-jheam-ross.pdf).
+
+### Monitoring rules
+
+The monitoring rules are in Table 2, in [Section 3.2 of the paper](PGs/2026_2_SBC_Jheam_Ross/sbc-jheam-ross.pdf).
+
+### Finding kinds
+
+The tool has ten finding kinds. The table lists them from the most severe to
+the least severe. The work list sorts the submissions by their most severe
+finding.
+
+| Rank | Rule | Finding kind (code) | Work list badge | Detail view label |
+| --- | --- | --- | --- | --- |
+| 1 | R12 | `missing_editor` | No editor | No editor assigned |
+| 2 | R16 | `missing_copyeditor` | No copyeditor | No copyeditor assigned |
+| 3 | None | `unsent_review_completion` | Result not sent | Review completion not sent |
+| 4 | R13 | `reviews_complete_no_decision` | No decision | Reviews complete, no decision |
+| 5 | R14 | `revision_pending_decision` | Revision received | Revised version received, no decision |
+| 6 | R11 | `missing_revision_indication` | Revision missing | Revised version missing |
+| 7 | R10 | `overdue_review` | Review overdue | Overdue review |
+| 8 | R9 | `missing_reviewer` | No reviewer | No reviewer assigned |
+| 9 | R17 | `overdue_review_invitation` | Invitation overdue | Review invitation overdue |
+| 10 | R15 | `awaiting_desk_decision` | Desk decision pending | Awaiting desk decision |
+
+The finding kinds are declared in
+[`src/server/internal/editorial/catalog.go`](src/server/internal/editorial/catalog.go).
+The labels are in
+[`src/client/messages/en.json`](src/client/messages/en.json) and
+[`src/client/messages/pt-BR.json`](src/client/messages/pt-BR.json).
+
+### Queues
+
+The queues are in [Section 4 of the paper](PGs/2026_2_SBC_Jheam_Ross/sbc-jheam-ross.pdf#page=7).
+
+### Emails
+
+| Email | Recipient | Template |
+| --- | --- | --- |
+| R1 to R5 | Assigned editor | [`rn1.tmpl`](src/server/internal/email/templates/rn1.tmpl) to [`rn5.tmpl`](src/server/internal/email/templates/rn5.tmpl) |
+| R6 to R8 | Reviewer | [`rn6.tmpl`](src/server/internal/email/templates/rn6.tmpl) to [`rn8.tmpl`](src/server/internal/email/templates/rn8.tmpl) |
+| R16 | Chief editors | [`rn18.tmpl`](src/server/internal/email/templates/rn18.tmpl) |
+| Welcome email | Each recipient, once | [`welcome.tmpl`](src/server/internal/email/templates/welcome.tmpl) |
+| Editorial summary | Chief editors | [`summary.tmpl`](src/server/internal/editorial/templates/summary.tmpl) |
+
+### Default values
+
+| Value | Default | Where to change it |
+| --- | --- | --- |
+| Collection cycle | Every hour | `OJS_COLLECTION_CRON` |
+| Email worker | Every minute | `EMAIL_WORKER_CRON` |
+| Editorial summary | Every Monday at 09:00 | `SUMMARY_CRON` |
+| Time zone of the schedules | `America/Sao_Paulo` | `EDITORIAL_TIMEZONE` |
+| Wait after a revision request (R11, R14) | Seven days | `EDITORIAL_RN11_FALLBACK_DAYS` |
+| Active reviewers per round (R9, R17) | Two | Hardcoded |
+
+The [Configuration reference](#configuration-reference) lists every configuration variable.
+
+## Screenshots
+
+All data in the screenshots are fictitious.
+
+The dashboard, with the work list on the left and the detail view of one
+submission on the right:
+
+![Work list and detail view](PGs/2026_2_SBC_Jheam_Ross/fig-dashboard.png)
+
+A reminder to a reviewer (R6):
+
+![Reminder to a reviewer](PGs/2026_2_SBC_Jheam_Ross/fig-email-reminder.png)
+
+The weekly editorial summary to the chief editors:
+
+![Editorial summary](PGs/2026_2_SBC_Jheam_Ross/fig-email-summary.png)
+
+## Repository layout
+
+| Path | Content |
+| --- | --- |
+| `src/server/` | The server: a Go program that extends PocketBase. |
+| `src/client/` | The dashboard: a static Next.js application. |
+| `docs/` | The deployment guide. |
+| `deploy/`, `scripts/` | The files and scripts for the deployment. |
+| `PGs/` | The paper and the first submission of the work. |
+
 
 ## Server setup
 
@@ -65,6 +183,22 @@ PocketBase superuser.
 | `OJS_CHIEF_EDITOR_GROUP_ID` | empty | Optional exact OJS group ID used to resolve chief editors. |
 | `OJS_CHIEF_EDITOR_GROUP_NAME` | empty | Optional exact OJS group name used to resolve chief editors. |
 
+## Dashboard setup
+
+The dashboard needs Node.js and pnpm. Build the static export and copy it to
+the server:
+
+```sh
+cd src/client
+pnpm install
+pnpm build
+pnpm publish:pb
+```
+
+`pnpm publish:pb` copies the static export to `src/server/pb_public/`. The
+server then serves the dashboard at <http://127.0.0.1:8090/>. To sign in,
+create a record in the `chief_editors` collection in the PocketBase Admin.
+
 ## Pre-commit checks
 
 A [Lefthook](https://github.com/evilmartians/lefthook) pre-commit hook, defined in
@@ -72,7 +206,7 @@ A [Lefthook](https://github.com/evilmartians/lefthook) pre-commit hook, defined 
 client files:
 
 - Server: `golangci-lint` fails the commit if a function's cyclomatic
-  complexity exceeds 4 (see `src/server/.golangci.yml`). `go test ./... -cover`
+  complexity exceeds 10 (see `src/server/.golangci.yml`). `go test ./... -cover`
   runs and prints coverage per package; it fails the commit only if a test
   fails, not because of the coverage number itself.
 - Client: `biome lint` fails the commit if a function's cognitive complexity
@@ -93,3 +227,7 @@ lefthook install
 Deployment to the production VM is documented separately, in
 [`docs/deployment.md`](docs/deployment.md). It covers the one-command deploy,
 rollback, backups, and first-time VM setup.
+
+## License
+
+The source code is under the MIT License. See [`LICENSE`](LICENSE).

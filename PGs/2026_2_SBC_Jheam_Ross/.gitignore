@@ -1,0 +1,13 @@
+# LaTeX build output
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+# Review reports from the sbc-paper skill
+.reviews/

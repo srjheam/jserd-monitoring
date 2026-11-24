@@ -4,503 +4,543 @@
 \usepackage[english]{babel}
 \usepackage{sbc-jheam-ross}
 \usepackage{graphicx,url,booktabs,tabularx,tikz,placeins}
-\usetikzlibrary{arrows.meta,positioning,fit}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
 \usepackage[hidelinks]{hyperref}
 \urlstyle{same}
-\hypersetup{pdftitle={JSERD Monitoring: An External Tool for Editorial Oversight in OJS},pdfauthor={}}
+\hypersetup{pdftitle={JSERD Monitoring: An External Tool for Editorial Oversight in OJS},pdfauthor={Jheam Storch Ross, Monalessa Perini Barcellos}}
 
 \title{JSERD Monitoring: An External Tool\\for Editorial Oversight in OJS}
-\author{}
-\address{}
-% A versão de submissão omite o bloco de identificação.
-\makeatletter
-\renewcommand{\@maketitle}{\newpage
-  \begin{center}
-    \vspace*{-.7cm}
-    {\XVIPT\bfseries\@title\par}
-  \end{center}\par}
-\makeatother
+\author{Jheam Storch Ross\inst{1}, Monalessa Perini Barcellos\inst{1}}
+\address{Departamento de Informática, Universidade Federal do Espírito Santo (UFES)\\
+  Vitória, ES, Brazil
+  \email{jheam.ross@edu.ufes.br, monalessa@inf.ufes.br}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-JSERD Monitoring is an external tool that monitors editorial work at JSERD
-in Open Journal Systems (OJS) 3.2.1. It combines OJS reports, API queries,
-and participant pages. It stores successive states,
-detects events, computes pending work, and prepares e-mail notifications.
-Chief editors use a dashboard to inspect evidence and record curation.
-This paper describes the implemented system, its rules, architecture, and
-integration decisions for the journal's OJS 3.2.1 installation, including
-the limits of event detection and notification delivery.
+The Brazilian Computer Society (SBC) publishes the Journal of Software
+Engineering Research and Development (JSERD), which uses Open Journal Systems
+(OJS) 3.2.1. This version of OJS has limitations that make it hard
+for the chief editors to monitor the submissions. To support the chief
+editors in this task, and to alert editors and reviewers so that the review
+process moves faster, this work developed JSERD Monitoring, a tool external
+to OJS. The tool collects data from OJS at regular intervals, detects events
+and deadlines, sends email notifications to editors and reviewers, and shows
+the chief editors the submissions that need attention. This paper presents
+the requirements, the architecture, and the features of the tool.
 \end{abstract}
 
 \section{Introduction}
-\label{sec:introducao}
+\label{sec-introduction}
 
-The chief editors of the \textit{Journal of Software Engineering Research
-and Development} (JSERD), a journal sponsored by the Brazilian Computer
-Society and its Special Committee on Software Engineering \cite{jserd},
-reported limited engagement with e-mails from \textit{Open Journal
-Systems} (OJS), which led to manual follow-up. According to their account,
-the interface separated submissions in progress from processed ones, but
-did not highlight unanswered invitations, overdue reviews, or other cases
-that need action. They had to inspect submissions repeatedly to find these
-cases.
+Scientific journals evaluate research results before they publish them.
+Editors coordinate this evaluation. They select the manuscripts that fit the
+journal, send them to reviewers, and monitor the peer review process so that
+it ends in a timely manner \cite{kelly2014peer}.
 
-The chief editors wanted to identify these cases and automate messages
-from templates that fit their needs. OJS 3.2 sends automatic reminders to
-reviewers only after a due date \cite{pkpworkflow}. JSERD also needed
-notices to several roles, a work list for chief editors, and local
-follow-up decisions.
+Open Journal Systems (OJS) is an open source system for the management and
+publication of scholarly journals \cite{willinsky2005ojs}, and it keeps track of
+the work of editors, reviewers, and authors \cite{pkpguia}. These records do
+not remove the need to monitor deadlines and the situations that require an
+editorial action.
 
-JSERD Monitoring\footnote{Source code and supplementary material:
-\url{https://github.com/srjheam/jserd-monitoring}.} meets this need through an external integration with
-the journal's OJS 3.2.1 installation.
-Its contribution lies in combining editorial data sources to apply
-monitoring rules, distinguishing events from persistent conditions, and
-preserving human curation between collection cycles. The server computes
-pending work and prepares notifications; the dashboard presents evidence
-and records chief editors' actions. Editorial decisions remain in OJS.
+The \textit{Journal of Software Engineering Research and Development}
+(JSERD) is an international journal sponsored by the Brazilian Computer
+Society (SBC) and its Special Committee on Software Engineering
+\cite{jserd}. JSERD uses OJS 3.2.1. In this installation, the monitoring of
+submissions requires manual work. The editorial team queries submissions in
+different stages, checks their dates and states, and then contacts the
+participants. The chief editors follow the progress of the submissions in an
+Excel spreadsheet. This routine takes time that the team could spend on
+editorial work.
 
-This paper describes the implemented solution, its integration decisions,
-and its incremental development from the project requirements. One of
-JSERD's chief editors tested and validated the solution.
-The study did not measure effects on messages, monitoring effort, or
-editorial turnaround times.
+The chief editors reported that the OJS email templates were not
+flexible enough. The recipients found the messages excessive and of little
+use, and they engaged little with them, which led to manual follow-up. The
+features of OJS 3.2 are also not enough for the monitoring. The
+interface does not highlight unanswered invitations or other cases that need
+action, and the chief editors have to inspect submissions repeatedly to find
+these cases. The submission list of OJS 3.2 can filter overdue submissions,
+and OJS sends automatic reminders to reviewers only after a due date
+\cite{pkpguia,pkpworkflow}.
 
-\section{Editorial Context and Requirements}
-\label{sec:contexto}
+To reduce this manual work, the chief editors listed the situations that
+need a message. Editors must know about the answers to invitations, the
+reviews, and the revised versions. Reviewers must receive reminders before
+their deadlines and an overdue notification when a review is late. The chief
+editors must receive, at regular intervals, a list of the submissions that
+need attention, for example submissions without an editor.
 
-\subsection{Editorial Workflow and Roles}
+The problem of this work is how to automate the monitoring of the editorial
+workflow of JSERD without interference in the workflow that OJS controls.
+The general objective of this work was to develop a tool external to OJS
+that supports this monitoring through the identification of events and
+deadlines, the sending of notifications, and the consolidation of information.
 
-The OJS workflow includes submission, review, copyediting, and production.
-Review can require several rounds, with different reviewers and requests
-for author revisions \cite{pkpguia}. A start date and an end date therefore
-cannot represent a submission. Each reviewer assignment has its own
-response, deadline, and status within a round.
+The result is JSERD Monitoring.\footnote{Source code and supplementary
+material: \url{https://github.com/srjheam/jserd-monitoring}.} It sends email
+notifications to editors and reviewers, with its own templates and only for
+the events that the chief editors chose. It also shows the pending work of
+each submission in a dashboard, and it sends the chief editors a periodic
+editorial summary by email. The work makes three contributions: (i)~the requirements
+of the tool and the monitoring rules that turn the demands of the chief
+editors into conditions on the OJS data; (ii)~its architecture, which
+combines three OJS data sources and compares successive snapshots of the
+OJS data to detect events; and (iii)~the tool itself, deployed for the JSERD
+installation of OJS and validated by one of the JSERD chief editors.
 
-In JSERD Monitoring, the \emph{chief editor} uses the dashboard to monitor
-submissions and record curation, and receives the editorial summary
-e-mail. The \emph{assigned editor} belongs to the OJS \textit{Associate
-Editor} group for a submission and receives RN1--RN5 notifications. The
-\emph{journal editor}, from the \textit{Journal editor} group, receives
-RN18 when assigned at the \textit{Copyediting} stage. The \emph{reviewer}
-answers invitations, submits reviews, and receives RN6--RN8 notifications.
-The \emph{copyeditor}, from the \textit{Copyeditor} group, receives no
-notification. Only chief editors use the dashboard. The \emph{superuser}
-administers the server through a separate account without access to the
-dashboard.
+Section~\ref{sec-background} presents peer review, OJS, and the roles of JSERD.
+Section~\ref{sec-requirements} presents the requirements, the rules, and the
+architecture of the tool. Section~\ref{sec-features} presents its features.
+Section~\ref{sec-related-work} compares it with related solutions.
+Section~\ref{sec-final} presents the final considerations.
 
-OJS remains the system for editorial decisions, assignments, and reviews.
-The integration reads its reports, API, and pages with a collection
-account. The monitoring database stores collected states, findings,
-notifications, and curation records.
+\section{Background}
+\label{sec-background}
 
-\subsection{Events, Findings, and Curation}
+This section presents peer review, the editorial workflow of OJS, and the
+editorial roles of JSERD. The rest of the paper uses these concepts.
 
-An \emph{event} records an occurrence that the system detects. Transition
-events depend on successive states, for example a completion date that
-changes from empty to filled. Time-based events also depend on the clock.
-Figure~\ref{fig:notificacao-rn6} shows this detection without a change in
-the invitation data.
+Scientific journals evaluate each submitted manuscript before publication,
+and the scientific community considers this prior evaluation necessary to ensure the quality and the reliability of the published texts
+\cite{mueller2006comunicacao}. This evaluation, called peer review, involves
+three roles. The author submits the manuscript and revises it when the
+reviewers suggest changes. The editor checks whether the manuscript fits the
+journal and sends it to reviewers. Each reviewer evaluates the manuscript
+and recommends that the editor accept it, reject it, or ask for
+improvements. Each activity has its own deadline. Editors track who reviews which manuscript and when, so
+they know when a review is late \cite{kelly2014peer}. Peer review therefore
+depends on the monitoring of pending tasks.
 
-\begin{figure}[!ht]
-\centering
-\begingroup
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[
-  box/.style={draw,rounded corners,align=center,font=\small,
-    text width=3.6cm,minimum height=1.15cm,inner sep=5pt},
-  arr/.style={-{Stealth[length=2mm]}},
-  note/.style={align=center,font=\small,text width=4.2cm,anchor=north}]
-  \fill[black!7] (4,-.08) rectangle (12.7,1.3);
-  \draw (4,1.05) -- (4,1.3) -- (12.7,1.3) -- (12.7,1.05);
-  \node[font=\small\bfseries,fill=white,inner sep=3pt] at (8.35,1.3)
-    {Event window};
-  \node[font=\small\bfseries] at (7,3.3)
-    {Same invitation in all three OJS observations};
+OJS is installed on a server and configured for each journal
+\cite{willinsky2005ojs}. SBC administers the installation that JSERD uses.
+In OJS \cite{pkpguia}, the editorial workflow of a submission has four stages. In the
+\textit{Submission} stage, an editor sends each new submission to review or
+declines it without review, a choice that this paper calls the desk
+decision. In the
+\textit{Review} stage, the peer review happens, together with the revisions
+that the authors make. In the \textit{Copyediting} stage, a copyeditor
+improves the text of an accepted submission. In the \textit{Production}
+stage, the edited text becomes the published files.
 
-  \node[box] (a) at (1.6,2.3) {Unconfirmed\\Response deadline: $D$};
-  \node[box] (b) at (6.4,2.3) {Unconfirmed\\Response deadline: $D$};
-  \node[box] (c) at (10.9,2.3) {Unconfirmed\\Response deadline: $D$};
-  \draw[dashed] (a.south) -- (1.6,0);
-  \draw[dashed] (b.south) -- (6.4,0);
-  \draw[dashed] (c.south) -- (10.9,0);
+In the \textit{Review} stage, an editor invites one or more reviewers. Each
+invitation has a response due date, and it stays unanswered until the
+reviewer accepts or declines it. A reviewer who accepts also has a review
+due date \cite{pkpworkflow}. When the reviews arrive, the editor accepts the
+submission, declines it, or requests revisions from the authors. A revision
+request states whether the revised version needs a new review, and OJS
+records the round as \textit{revisions requested} or \textit{resubmit for
+review}. After the authors upload a revised version, the editor can start a
+new review round with the same or other reviewers, and the rounds repeat
+until a final decision \cite{pkpguia,pkplib}. A submission can therefore go
+through several rounds, and each round has several reviewer assignments with
+their own responses, deadlines, and status.
 
-  \draw[arr] (-.4,0) -- (14,0) node[above,font=\small] {time};
-  \draw (4,-.12) -- (4,.12);
-  \draw (12.7,-.12) -- (12.7,.12);
-  \node[below,font=\small] at (4,-.15) {$D - 2$ days};
-  \node[below,font=\small] at (12.7,-.15) {$D$};
-  \foreach \x/\label in {1.6/A,6.4/B,10.9/C} {
-    \fill (\x,0) circle (2pt);
-    \node[below,font=\small\bfseries] at (\x,-.15) {Cycle \label};
-  }
+JSERD divides the editorial work among three roles in OJS. The chief
+editors supervise all submissions of the journal, and OJS calls their role
+journal editor. In the \textit{Submission} stage, a chief editor assigns
+the editor who conducts the peer review of the submission, here called the
+assigned editor. OJS calls this role associate editor. In the
+\textit{Copyediting} stage, a chief editor also assigns the copyeditor.
 
-  \node[note] at (1.6,-.8) {Outside window\\No event};
-  \node[note] (first) at (6.4,-.8) {First observation\\inside window\\Occurrence detected};
-  \node[note] at (10.9,-.8) {Occurrence recorded\\No new event};
+Some JSERD submissions are linked to a conference, and editors from that
+conference follow their progress. OJS does not record this link. The chief
+editors trust these editors, so they do not monitor these submissions
+closely.
 
-  \node[box,minimum height=1.6cm] (event) at (1.6,-4.05) {Event\\Response deadline\\approaching};
-  \node[box,minimum height=1.6cm] (notice) at (6.4,-4.05) {Notification\\Record required\\by RN6};
-  \node[box,minimum height=1.6cm] (request) at (11.2,-4.05) {E-mail\\Recipient is the reviewer};
-  \draw[arr] (first.south) -- (6.4,-2.7) -| (event.north);
-  \draw[arr] (event) -- (notice);
-  \draw[arr] (notice) -- (request);
-\end{tikzpicture}%
-}
-\endgroup
-\caption{Time-based event detection (RN6). Source: the authors.}
-\label{fig:notificacao-rn6}
-\end{figure}
+\section{JSERD Monitoring Requirements and Architecture}
+\label{sec-requirements}
 
-A \emph{finding} states that a submission needs the chief editor's
-attention. It can stay open across several collection cycles without a
-new event in each cycle. A missing editor is an example of such a
-condition. A \emph{notification} is a record that a rule specifies, and it
-produces one \emph{e-mail} per recipient. \emph{Curation} comprises the
-human actions in the dashboard: notes, conference associations, muting,
-and marks as up to date.
+This section presents the requirements of JSERD Monitoring, the rules that
+put them into practice, and its architecture. The requirements came from the demands of the JSERD
+chief editors (Section~\ref{sec-introduction}) and from meetings with them.
 
-The monitoring requirements cover notices to editors about invitation
-responses, missed deadlines, received reviews, completion of all reviews,
-and signs of a revised manuscript. Reviewers receive notifications in
-the two-day window before response and review deadlines, and an overdue
-review notice. Chief editors can consult current findings in the
-dashboard and in the editorial summary e-mail.
+\subsection{Requirements}
+\label{sec-requirements-list}
 
-\subsection{Rules}
-
-Table~\ref{tab:regras} lists the monitoring rules and their outputs.
-At the
-chief editors' request, the system requires two active reviewers per round.
-It also waits seven days after a revision-request decision before RN11 and
-RN16 apply. These are configurable journal-specific criteria.
-Active reviewers are the assignments of the latest round in
-the assignment that are not declined, cancelled, or overdue for a response.
+This subsection presents the users and the requirements of the tool. The
+tool has three kinds of users. The chief editors use the dashboard and
+receive a periodic editorial summary by email. The assigned editor of a
+submission and the reviewers receive email notifications. The chief editors
+also receive a notification when a submission has no copyeditor. Assigned
+editors and reviewers do not use the dashboard, and they keep working in OJS.
+Table~\ref{tbl-requirements} presents the requirements.
 
 \begin{table}[!t]
-\caption{Monitoring rules and outputs. RN stands for business rule
-(Portuguese: \textit{regra de negócio}). AE: assigned editor.}
-\label{tab:regras}
+\caption{Requirements of JSERD Monitoring. FR: functional. NFR: non-functional.}
+\label{tbl-requirements}
 \centering
 \footnotesize
-\begin{tabularx}{\textwidth}{@{}p{.8cm}X>{\raggedright\arraybackslash}p{4.3cm}@{}}
+\begin{tabularx}{\textwidth}{@{}p{1.05cm}X>{\raggedright\arraybackslash}p{2.45cm}@{}}
 \toprule
-Rule & Condition & Output \\
+ID & Requirement & Dependency \\
 \midrule
-RN1 & A reviewer answers an invitation (Section~\ref{sec:discussao}). & Invitation-answered notice to the AE. \\
-RN2 & Invitation unanswered after its response due date. & Notice to the AE. \\
-RN3 & Reviewer submits a review. & Notice to the AE. \\
-RN4 & All reviews in the round become complete. & Notice to the AE. \\
-RN5 & The latest round leaves the revisions-requested or resubmit-for-review state. & Revision-hint notice to the AE. \\
-RN6 & Unanswered invitation in the 48 hours before its response due date. & Approaching-deadline notice to the reviewer. \\
-RN7 & Incomplete review assignment in the two calendar days before its review due date. & Approaching-deadline notice to the reviewer. \\
-RN8 & Incomplete review assignment from the start of its review due date. & Overdue notice to the reviewer. \\
-RN9 & Latest open round with fewer than two active reviewers. & Missing-reviewer finding. \\
-RN10 & Confirmed, incomplete review from the start of its review due date. & Overdue-review finding. \\
-RN11 & Revision still pending more than seven days after the revision-request decision, with no later round. & Missing-revised-manuscript finding. \\
-RN13 & Submission has no assigned editor. & Missing-editor finding. \\
-RN15 & All reviews of the latest round are complete, with no later decision. & Reviews-complete-without-decision finding. \\
-RN16 & Revision no longer pending, more than seven days after the revision-request decision, with no later round. & Revised-manuscript-awaiting-decision finding. \\
-RN17 & Submission in the OJS \textit{Submission} stage, before a decision to send it to review. & Desk-decision finding. \\
-RN18 & Observed absence of a \textit{Copyeditor} on an active submission in \textit{Copyediting}. & Finding, and a first notice to the assigned \textit{Journal editors}. \\
-RN19 & Overdue invitation in the latest round, with fewer than two active reviewers. & Overdue-invitation finding. \\
+FR01 & The tool must collect the editorial data of the JSERD submissions from OJS at regular intervals. & None \\
+FR02 & The tool must notify the assigned editor of answers to invitations, expired invitations, submitted reviews, completed rounds, and revised versions. & FR01, FR06 \\
+FR03 & The tool must remind each reviewer two days before the response and review deadlines, and notify the reviewer when the review deadline passes. & FR01, FR06 \\
+FR04 & The tool must show the chief editors, in a dashboard, the submissions that need attention and the OJS data behind each case. & FR01 \\
+FR05 & The tool must send the chief editors a periodic editorial summary by email, with the submissions that need attention. & FR04, FR06 \\
+FR06 & The tool must use an email template for each kind of message. & None \\
+FR07 & The tool must let the chief editors write notes, associate submissions with conferences, mute submissions, and mark submissions as up to date. & FR04 \\
+FR08 & The tool must notify the chief editors when a submission in the \textit{Copyediting} stage has no copyeditor. & FR01, FR06 \\
+\midrule
+ID & Requirement & Category \\
+\midrule
+NFR01 & The tool must work with OJS 3.2.1 without any change to OJS or to its data. & Interoperability \\
+NFR02 & The tool must give access to the dashboard only to chief editor accounts. & Security \\
+NFR03 & The tool must not send the same notification twice. & Reliability \\
+NFR04 & The tool must send emails in English and show the dashboard in English and Portuguese. & Usability \\
+NFR05 & The tool must run on a single server. & Portability \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\section{Development and Implemented Solution}
-\label{sec:solucao}
+The notifications to editors and reviewers (FR02, FR03, FR06, and FR08) and
+the support for the chief editors (FR04, FR05, and FR07) use the data that
+FR01 collects. The non-functional
+requirements limit how the tool reaches OJS (NFR01), who can use the
+dashboard (NFR02), how the tool sends notifications (NFR03), which languages
+it uses (NFR04), and where it runs (NFR05).
 
-For each rule, queries to OJS established which report, API resource, or
-page provides the data. Development proceeded incrementally through data
-collection, processing, messaging, and the interface.
+\subsection{Monitoring Rules}
+\label{sec-rules}
 
-\subsection{Architecture and Cycle Execution}
+The requirements describe situations in the language of the editors. The
+OJS data do not state these situations directly, so the tool derives them
+from the collected data. Some situations are changes between two collections, such as the
+answer to an invitation. Some depend on the current date, such as a
+deadline two days away. Others are conditions that stay true until someone
+acts, such as a submission without an editor. Each monitoring rule describes
+one situation as an exact condition on the OJS data, and it gives the
+output of the condition. Table~\ref{tbl-rules} lists the rules and the
+requirements that they implement.
 
-The Go server \cite{golang} extends PocketBase, which provides
-authentication, an API, and SQLite persistence \cite{pocketbase,sqlite}.
-It serves the Next.js dashboard as static files \cite{nextestatico} behind
-a Caddy reverse proxy \cite{caddy}. Figure~\ref{fig:arquitetura}
-shows the components and the data exchanges. The SMTP server is an
-external dependency.
+\begin{table}[!t]
+\caption{Monitoring rules. AE: assigned editor.}
+\label{tbl-rules}
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}p{.75cm}X>{\raggedright\arraybackslash}p{3.3cm}>{\raggedright\arraybackslash}p{1.75cm}@{}}
+\toprule
+Rule & Condition & Output & Req. \\
+\midrule
+R1 & A reviewer answers an invitation. & Notification to the AE. & FR02 \\
+R2 & An invitation is unanswered after its response due date. & Notification to the AE. & FR02 \\
+R3 & A reviewer submits a review. & Notification to the AE. & FR02 \\
+R4 & All reviews in the round become complete. & Notification to the AE. & FR02 \\
+R5 & The latest round leaves the revisions-requested or resubmit-for-review state. & Notification to the AE. & FR02 \\
+R6 & Unanswered invitation, two days or less before its due date. & Reminder to the reviewer. & FR03 \\
+R7 & Incomplete review, two days or less before its due date. & Reminder to the reviewer. & FR03 \\
+R8 & Incomplete review on or after its due date. & Overdue notification to the reviewer. & FR03 \\
+R9 & Latest open round with fewer than two active reviewers. & Missing-reviewer finding. & FR04, FR05 \\
+R10 & Confirmed, incomplete review on or after its due date. & Overdue-review finding. & FR04, FR05 \\
+R11 & Revision still pending more than seven days after the revision request, with no later round. & Missing-revision finding. & FR04, FR05 \\
+R12 & Submission without an assigned editor. & Missing-editor finding. & FR04, FR05 \\
+R13 & Latest round with all reviews complete and no later decision. & No-decision finding. & FR04, FR05 \\
+R14 & Revision no longer pending, more than seven days after the revision request, with no later round. & Revision-awaiting-decision finding. & FR04, FR05 \\
+R15 & Submission in the \textit{Submission} stage without a desk decision. & Desk-decision finding. & FR04, FR05 \\
+R16 & Active submission in \textit{Copyediting} whose stage participant page lists no copyeditor. & Missing-copyeditor finding and a notification to the chief editors. & FR04, FR05, FR08 \\
+R17 & Overdue invitation in the latest round, with fewer than two active reviewers. & Overdue-invitation finding. & FR04, FR05 \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
-\begin{figure}[htbp]
+A rule produces an event, a finding, or both. An \emph{event} is an
+occurrence that the tool detects once, and it produces an email notification to each
+recipient. A \emph{finding} states that a submission needs the attention of
+a chief editor. A finding stays open while its condition holds, and it
+appears in the dashboard and in the editorial summary. R16 produces both
+outputs.
+
+Four rules use criteria of JSERD. R9 and R17 require two active reviewers
+per round. The active reviewers are the reviewers of the latest round whose
+assignments are not declined, cancelled, or overdue for a response. Two is
+the number of reviews that JSERD expects in each round. R11 and R14 share
+one wait of seven days after a revision request, which gives the authors
+time to send the revised version. After the wait, if no new round started,
+R11 applies when the authors did not send the revised version, and R14
+applies when they sent it but the editor made no later decision.
+
+\subsection{Architecture}
+\label{sec-architecture}
+
+This subsection presents the four design decisions of JSERD Monitoring and
+then its components. First, SBC administers the OJS installation that JSERD
+uses, and the accounts of the chief editors cannot install plugins or create
+roles. JSERD Monitoring is therefore a separate tool that only
+reads OJS (NFR01). Second, no single OJS interface provides all the data
+that the rules need (FR01). The tool reads the article and review reports
+of OJS, which export the data of all submissions in batches. The REST API
+adds, for each submission, the stage and the state of its rounds and
+assignments \cite{pkpapi}. The stage participant page adds the people
+assigned to each stage, such as the copyeditor that R16 checks.
+
+Third, the tool detects
+changes by comparison \cite{labio1996}. In each collection, it stores a
+\emph{snapshot}, a copy of the collected state, and compares it with the
+previous snapshot. This comparison detects the events of R1, R3, R4, and R5
+(FR02) and the notification of R16 (FR08). The other rules evaluate the
+latest snapshot and the current date. Fourth, the tool records each
+notification before it sends it, so that a repeated detection does not
+produce a second notification (NFR03).
+
+Figure~\ref{fig-architecture} shows the components, the data that they
+exchange, and the external dependencies in dashed boxes. The server is a Go program \cite{golang} that extends PocketBase,
+which provides authentication, an API, and persistence in SQLite
+\cite{pocketbase,sqlite}. The server works in \emph{cycles}. A cycle is the
+recurring unit of work of the tool, and it runs every hour by default. In a
+cycle, the Collector signs in to OJS with a collection account and reads the
+three sources into a common internal model, with details from individual
+submission queries. The Processor stores the result
+as a snapshot in the Database, compares it with the previous snapshot,
+detects events, and creates the notifications that the rules require. The
+Finding evaluator then reads the latest snapshot, computes the findings of
+each submission, and stores them in the Database. If a query to OJS fails,
+the cycle stops, the dashboard keeps the previous findings, and the next
+cycle queries OJS again.
+
+The other components deliver the results. Email delivery has two parts. The
+Email worker runs every minute, apart from the cycles. It sends the pending
+notifications through an external SMTP server \cite{smtp} and records the
+outcome of each attempt. At the end of a cycle, when its schedule is due,
+the editorial summary also goes out through the SMTP server. The Dashboard
+API serves the dashboard files and the curation data of FR07. The curation
+data are the notes, conference associations, mutes, and up-to-date marks,
+and they stay apart from the data that each cycle recomputes. The Dashboard is a Next.js application that runs as static
+files \cite{nextestatico} in the browser of the chief editor. It reaches the
+server over HTTPS through a Caddy reverse proxy \cite{caddy}. Only chief
+editor accounts sign in to the Dashboard (NFR02), and a separate superuser
+account administers the server.
+
+\begin{figure}[!t]
 \centering
 \begingroup
+\definecolor{srvfill}{RGB}{214,228,250}
+\definecolor{clifill}{RGB}{222,242,220}
+\definecolor{extfill}{RGB}{255,249,204}
 \begin{tikzpicture}[
-  box/.style={draw,rounded corners,align=center,font=\small,text width=3.4cm,minimum height=1.1cm},
-  ext/.style={draw,dashed,align=center,font=\small,text width=3.4cm,minimum height=1.1cm},
-  arr/.style={-{Stealth[length=2mm]}}]
-  \node[ext] (ojs) at (0,.6) {JSERD OJS\\reports, API\\and participants};
-  \node[box] (web) at (4.9,.6) {Chief editor\\Next.js dashboard\\in the browser};
-  \node[draw,fit=(web),inner sep=.18cm,
-    label={[font=\small\bfseries]above:Client}] {};
-  \node[ext] (smtp) at (9.8,.6) {SMTP server};
-  \node[box] (collect) at (0,-2.1) {Collection,\\normalization,\\and enrichment};
-  \node[box] (api) at (4.9,-2.1) {Dashboard files\\and curation API};
-  \node[box] (mail) at (9.8,-2.1) {\textit{worker}\\and editorial\\summary};
-  \node[box] (process) at (0,-4.2) {State, event, and\\notification processing};
-  \node[box] (db) at (4.9,-4.2) {PocketBase\\SQLite persistence};
-  \node[box] (find) at (9.8,-4.2) {Finding computation\\and publication};
-  \node[draw,fit=(collect)(process)(find)(db)(mail)(api),inner sep=.25cm,
-    label={[font=\small\bfseries]below:Server}] {};
-  \draw[arr] (ojs) -- (collect);
-  \draw[arr] (collect) -- (process);
-  \draw[<->,>=Stealth] (process) -- (db);
-  \draw[<->,>=Stealth] (find) -- (db);
-  \draw[<->,>=Stealth] (db) -- (api);
-  \draw[<->,>=Stealth] (db.north east) -- (mail.south west);
-  \draw[arr] (mail) -- (smtp);
-  \draw[<->,>=Stealth] (api) -- node[right,font=\scriptsize]{HTTPS/Caddy} (web);
+  font=\sffamily,
+  every node/.style={align=center},
+  comp/.style={draw=black!65,rounded corners=3pt,text width=3cm,minimum height=1cm,inner sep=2pt,font=\sffamily\footnotesize},
+  srv/.style={comp,fill=srvfill},
+  cli/.style={comp,fill=clifill},
+  ext/.style={comp,fill=extfill,dashed},
+  arr/.style={-{Stealth[length=1.7mm]},draw=black!70,line width=.55pt},
+  biarr/.style={{Stealth[length=1.7mm]}-{Stealth[length=1.7mm]},draw=black!70,line width=.55pt},
+  lbl/.style={font=\sffamily\scriptsize,text=black!75,inner sep=1.5pt},
+  person/.pic={\draw[black!70,line width=.6pt,fill=white] (0,.32) circle (.085);
+    \draw[black!70,line width=.6pt] (0,.235)--(0,-.04) (-.15,.15)--(.15,.15)
+      (0,-.04)--(-.11,-.25) (0,-.04)--(.11,-.25);}]
+  \newcommand{\cmp}[2]{#1\\[-1pt]{\scriptsize\color{black!70}#2}}
+  % Top row: external dependencies and the client.
+  \node[ext] (ojs) at (0,0) {\cmp{JSERD OJS}{reports, REST API, participant pages}};
+  \node[cli] (web) at (5.7,0) {\cmp{Dashboard}{Next.js, in the browser}};
+  \node[ext] (smtp) at (11.4,0) {\cmp{SMTP server}{external email relay}};
+  \pic at (2.85,.04) {person}; \node[lbl,below] at (2.85,-.22) {Chief editor};
+  \pic at (8.55,.04) {person}; \node[lbl,below] at (8.55,-.22) {Email\\recipients};
+  % Server.
+  \node[srv] (collect) at (0,-1.8) {\cmp{Collector}{three OJS sources}};
+  \node[srv] (api) at (5.7,-1.8) {\cmp{Dashboard API}{files and curation data}};
+  \node[srv] (mail) at (11.4,-1.8) {\cmp{Email delivery}{Email worker, editorial summary}};
+  \node[srv] (process) at (0,-3.45) {\cmp{Processor}{snapshot comparison}};
+  \node[srv] (db) at (5.7,-3.45) {\cmp{Database}{PocketBase and SQLite}};
+  \node[srv] (find) at (11.4,-3.45) {\cmp{Finding evaluator}{rules R9 to R17}};
+  \begin{scope}[on background layer]
+    \node[fit=(collect)(process)(find)(mail),inner sep=.22cm,draw=black!45,fill=black!3,rounded corners=4pt,
+      label={[font=\sffamily\footnotesize\bfseries,text=black!75,inner sep=2pt]below:Server: Go and PocketBase}] {};
+  \end{scope}
+  % Data flows.
+  \draw[arr] (3.15,.04) -- (web.west);
+  \draw[arr] (smtp.west) -- (8.85,.04);
+  \draw[arr] (ojs) -- node[lbl,right,pos=.25]{OJS data} (collect);
+  \draw[arr] (collect) -- node[lbl,right]{internal model} (process);
+  \draw[biarr] (process) -- node[lbl,below]{snapshots, events,\\notifications} (db);
+  \draw[biarr] (db) -- node[lbl,below]{snapshot, findings} (find);
+  \draw[biarr] (api) -- node[lbl,left]{findings, curation data} (db);
+  \draw[biarr] (db.north east) -- node[lbl,above,sloped]{emails, findings} (mail.south west);
+  \draw[arr] (mail) -- node[lbl,right,pos=.75]{emails} (smtp);
+  \draw[biarr] (web) -- node[lbl,right,pos=.25]{HTTPS, Caddy} (api);
 \end{tikzpicture}
 \endgroup
-\caption{Architecture and data exchanges. Solid outlines enclose the client and server. Dashed boxes denote external dependencies. Source: the authors.}
-\label{fig:arquitetura}
+\caption{Architecture of JSERD Monitoring. Source: the authors.}
+\label{fig-architecture}
 \end{figure}
 
-A \emph{cycle} is the recurring unit of monitoring. By default, a cycle
-runs every hour, the e-mail worker every minute, and the editorial summary
-on Mondays at 09:00, São Paulo time. The superuser can also request a
-manual cycle. The coordinator controls the cycle sequence and rejects a
-second run while a cycle is in progress in the same process. The design
-assumes one server process. Collection signs in, downloads the article and
-review reports, and reads the submissions API. It records the source and
-outcome of each download, including failures.
-
-Normalization converts the data into a common internal model.
-\emph{Enrichment} adds details from individual submission queries.
-Processing stores the normalized state, compares it with the previous
-state, detects events, and matches notification rules. The server then
-computes findings, updates the dashboard, and checks the summary schedule.
-
-Enrichment runs twice in each cycle. The first pass runs before the server
-saves the snapshot, because RN2, RN5, RN7, RN8, and RN18 need live OJS
-status to create events. The second pass runs before finding computation.
-It reloads the saved snapshot and queries invitation status, due-date
-status, and the active reviewers of the latest round again. A failed query stops the cycle. Committed transactions remain, and
-the next cycle queries OJS again. If the second pass fails, the snapshot
-and events remain, and the dashboard keeps its previous findings until the
-next successful cycle.
-
-\subsection{Combining Sources and Evidence}
-\label{sec:fontes}
-
-Collection reads three OJS sources. The \textit{ArticleReportPlugin},
-\textit{ReviewReportPlugin}, and \textit{ViewReportPlugin} reports provide
-submissions, assignments, and metrics in batches. The REST API lists
-submissions with a summary schema, and an individual query returns stage,
-rounds, and assignments \cite{pkpapi}. The stage participant page lists the
-people assigned to each stage. The collection account needs access to all
-three sources. The server queries details only for submissions that are
-candidates for rules that need them.
-
-The sources identify people differently. The Reviews report gives each
-reviewer a username and an e-mail address, and reviewer notices go to that
-address. The participant page gives only the names of assigned editors.
-The system matches these names with the editor e-mail addresses in the
-article report. The API detail gives the status and due date of each
-assignment, but no reviewer identity. The system therefore applies API
-status to all report rows that share a round, or a round and a review due
-date.
-
-For RN5, an author revision is pending when the latest round is in the
-revisions-requested or resubmit-for-review state \cite{pkplib}. The event
-occurs when a cycle observes the round in another state after the previous
-cycle observed it as pending. The new state can be a submitted revision,
-but also an accept or decline decision. RN5 is therefore an indicator that
-can produce false positives, and it does not confirm a file or its author.
-RN16 uses the same round-state proxy.
-
-RN18 distinguishes an assigned \textit{Copyeditor}, an observed absence,
-and unknown evidence. Only an observed absence produces a finding. Evidence
-is unknown, for example, when the article report shows a submission in
-\textit{Copyediting} but the individual query no longer does.
-
-\subsection{Successive States and Duplicate Prevention}
-
-The system stores a \emph{snapshot}, a copy of the normalized state, for
-each processed cycle. Snapshot comparison detects transitions without
-changes to OJS. The first snapshot is the baseline for transitions, but it
-can already produce time-based and missing-copyeditor events.
-
-Each event receives a key computed from its type, entity, transition, and
-occurrence. For time-based events, the occurrence includes the deadline,
-so a deadline extension produces a new event. The database enforces key
-uniqueness, so reprocessing an occurrence creates no new record, as in the
-\textit{Idempotent Receiver} pattern \cite{idemreceiver}.
-
-One transaction records the cycle, the snapshot, and the events. A second
-transaction creates the notification and one e-mail record per recipient
-before any SMTP communication. Only this second step applies the
-\textit{Transactional Outbox} pattern \cite{outbox}. Uniqueness constraints
-and the worker reservation give three guarantees: at most one event per
-key, one notification per event and rule, and one send attempt per e-mail.
-
-\subsection{Notifications and Editorial Summary}
-
-The e-mail worker reserves pending e-mails and records the outcome of each
-send attempt. The persisted reservation prevents two workers from
-processing the same e-mail. The first
-notification to a person also produces a welcome e-mail.
-
-Sending uses SMTP \cite{smtp} or the default simulated transport, which
-writes e-mails to the server output. The templates are in English, have
-plain-text and HTML versions, and are part of the code. A failure to create
-a notification does not stop finding computation, and later cycles resume
-event-rule matches without a notification.
-
-\subsection{Dashboard and Preservation of Curation}
-
-The dashboard lists submissions with their findings and the supporting
-data. The work list orders submissions by their most severe finding.
-The detail view shows OJS evidence, send history, and curation notes,
-with a link to the submission in OJS. The dashboard is available in
-Portuguese and English. Figure~\ref{fig:painel} shows the work list and the
-send history of one submission with fictitious data.
-
-\begin{figure}[!t]
-\centering
-\includegraphics[width=\linewidth]{painel-monitoramento-editorial.png}
-\caption{Dashboard with the work list and a selected submission. All data are fictitious. Source: the authors.}
-\label{fig:painel}
-\end{figure}
-
-Each submission belongs to exactly one queue, assigned in this order:
-archived, muted, up to date, and work (Figure~\ref{fig:filas}). Final
-outcomes, such as publication, rejection, and withdrawal, depend on the
-current OJS state.
-
-\begin{figure}[!t]
-\centering
-\begingroup
-\resizebox{\linewidth}{!}{%
-\begin{tikzpicture}[
- font=\fontsize{10}{12}\selectfont,
- arr/.style={-{Stealth[length=1.5mm]},semithick},
- queue/.style={draw,rounded corners,align=center,text width=2.15cm,minimum height=.7cm},
- note/.style={align=left,text width=14.7cm,font=\fontsize{9}{11}\selectfont,anchor=north}]
-
-\node[align=center,text width=2.4cm] (a) at (0,0) {Archive?};
-\node[align=center,text width=2.4cm] (b) at (4,0) {Muted?};
-\node[align=center,text width=2.4cm] (c) at (8,0) {Up to date?};
-\node[queue] (ar) at (0,-1.4) {Archived};
-\node[queue] (mu) at (4,-1.4) {Muted};
-\node[queue] (up) at (8,-1.4) {Up to date};
-\node[queue] (wo) at (12,-1.4) {Work};
-\draw[arr] (a) -- node[above]{No} (b);
-\draw[arr] (b) -- node[above]{No} (c);
-\draw[arr] (c.east) -- node[above]{No} (12,0) -- (wo.north);
-\draw[arr] (a) -- node[right]{Yes} (ar);
-\draw[arr] (b) -- node[right]{Yes} (mu);
-\draw[arr] (c) -- node[right]{Yes} (up);
-\node[note] at (6,-2.1) {\textbf{Archive:} final OJS state, or an active \textit{Copyediting} submission with an assigned \textit{Copyeditor}. \textbf{Up to date:} no findings, or a manual mark that is still valid. The first condition that holds determines the queue.};
-
-\end{tikzpicture}%
-}
-\endgroup
-\caption{Dashboard queue precedence. Arrows show the classification order. Source: the authors.}
-\label{fig:filas}
-\end{figure}
-
-When a chief editor marks a submission as up to date, the system saves a
-digest of the finding types present at that moment, without deadlines or
-counts. The mark expires when the set of types changes or when the return
-date that the chief editor chose arrives.
-
-Muting removes a submission from the work list when a trusted editor
-handles it. Conference associations exist only in JSERD Monitoring. A
-trusted editor handles the submissions of a conference, so selecting or
-changing a conference also mutes the submission, and removing the
-association unmutes it. The chief editor can still unmute a submission and
-keep its conference. The system still collects and evaluates muted
-submissions, but their findings do not return them to the work list. Muting
-also removes a submission from the editorial summary, but editors and
-reviewers still receive event notifications.
-
-Curation data remain separate from data that the system recomputes. A new
-cycle can update the state and findings of a submission, but notes are
-immutable. Access follows the same split. Chief editors change curation
-data, and only the superuser administers the server.
-
-\subsection{Access, Personal Data, and Availability}
-
-The dashboard requires chief editor authentication and shows the same
-journal view to every account. The OJS and SMTP credentials reach the server as
-environment variables from a file on the host.
-
-The database contains submission and assignment data, contact data for
-authors, editors, and reviewers, and curation records. Following the necessity principle in
-Art.~6 of the LGPD \cite{lgpd}, snapshots do not keep review comments,
-recommendations, or reviewer profile columns, which no rule reads. The raw
-report files keep every column, including review comments. Retention keeps
-raw files and snapshot contents for the 240 most recent cycles, about ten
-days at the default schedule. A daily off-site backup contains the
-PocketBase databases and the latest state, but not the full history of raw
-files and states.
-
-\section{Related Work}
-\label{sec:relacionados}
-
-Journal systems offer part of this monitoring. OJS 3.2 sends reviewer
-reminders after due dates \cite{pkpworkflow}, and it e-mails stage editors
-when a reviewer accepts or declines an invitation \cite{pkplib}.
-JSERD Monitoring adds rules that
-combine several sources, findings for chief editors, and local curation,
-without changes to OJS.
-
-Lopes and Oliveira describe a framework that queries sources periodically,
-compares the results with internal storage, and triggers template-defined
-operations, including e-mails, for unrecorded content \cite{lopes2015}. It
-detects new content through identifiers or hashes. JSERD Monitoring
-compares normalized states to detect editorial transitions, and other rules
-consider elapsed time and persistent conditions.
-
-Labio and Garcia-Molina \cite{labio1996} study snapshot comparison to infer
-changes. Duplicate prevention relates to the \textit{Idempotent Receiver}
-pattern \cite{idemreceiver}, and the e-mail records relate to the
+Two mechanisms prevent duplicate notifications. Each event receives a key
+computed from its type, its entity, and its occurrence, which for a deadline
+includes the deadline itself. The Database keeps the keys unique, so a
+second detection creates no new event, as in the \textit{Idempotent
+Receiver} pattern \cite{idemreceiver}. A transaction then creates the notification and
+one email record per recipient before any SMTP communication, as in the
 \textit{Transactional Outbox} pattern \cite{outbox}.
 
-\section{Discussion and Limitations}
-\label{sec:discussao}
+\section{JSERD Monitoring's Features}
+\label{sec-features}
 
-The article report and the participant page identify editors by name,
-without a stable identifier. Name normalization merges people with the
-same name, also across the editor and reviewer roles. The API detail has
-no reviewer identity. The Reviews report keeps declined and cancelled
-assignments, and a decline also fills the confirmation date
-\cite{pkplib}.
+This section presents what the users do with JSERD Monitoring, step by
+step. It follows a fictitious submission as a running example. The submission is in its second review
+round. Reviewer~A accepted the invitation and submitted a review. Reviewer~B
+has an unanswered invitation, and its response due date is two days away.
 
-Periodic collection delays change detection. A cycle represents the data
-that its queries obtained. Report and detail queries do not form a single
-OJS transaction. Transitions before observation began have no previous
-state, and intermediate changes between cycles can go unobserved.
+On this day, R6 applies, and Reviewer~B receives the reminder of
+Figure~\ref{fig-emails}(a). The reminder states the deadline and links to
+the submission in OJS. Two days later, the due date passes without an
+answer, and R2 notifies the assigned editor. The round now has only one
+active reviewer, Reviewer~A, so R9 and R17 open two findings for the chief
+editors. The rest of this section shows the submission at this point. In
+the figures, Reviewer~B is Bruno Martins, and the assigned editor is João
+Santos.
 
-The integration depends on permissions, report plugins, the structure of
-participant pages, and OJS status codes \cite{pkplib}, and not all of them
-have a stable interface. Another OJS version or journal requires a check of
-these sources and of local criteria.
+\begin{figure}[!t]
+\centering
+\begin{minipage}[t]{.49\linewidth}\centering
+\fbox{\includegraphics[width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax]{fig-email-reminder.png}}\\[2pt]
+(a) Reminder to a reviewer (R6)
+\end{minipage}\hfill
+\begin{minipage}[t]{.49\linewidth}\centering
+\fbox{\includegraphics[width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax]{fig-email-summary.png}}\\[2pt]
+(b) Editorial summary
+\end{minipage}
+\caption{Emails of JSERD Monitoring, with fictitious data. Source: the authors.}
+\label{fig-emails}
+\end{figure}
 
-A prepared notification does not guarantee delivery. Missing addresses
-prevent sending. The worker does not retry failed attempts. Ordering
-is not guaranteed, and SMTP acceptance does not prove arrival or reading.
-The design therefore does not give the delivery guarantees of the
-\textit{Transactional Outbox} pattern.
+A chief editor signs in to the dashboard, which takes the place of the
+spreadsheet of Section~\ref{sec-introduction}, and sees the work list on
+the left of Figure~\ref{fig-dashboard}. The work list shows the submissions
+that need attention, ordered by their most severe finding. Each row shows
+the submission ID, the editors, the title, a badge for each finding, and the
+days since the last activity in OJS, or the days past the deadline of the
+most severe finding. Buttons on each row add a note and mark
+the submission up to date. In the running example, the row shows the
+badge \textit{No reviewer} of R9 and the badge \textit{Invitation overdue}
+of R17. A search field filters
+the list by ID, title, or editor.
 
-\section{Conclusion}
-\label{sec:conclusao}
+\begin{figure}[!t]
+\centering
+\fbox{\includegraphics[width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax]{fig-dashboard.png}}
+\caption{Work list and detail view. All data are
+fictitious. Source: the authors.}
+\label{fig-dashboard}
+\end{figure}
 
-JSERD Monitoring is an external monitoring layer for the OJS installation
-of JSERD, while editorial decisions remain in OJS. The server combines
-reports and individual queries, stores successive states, recognizes events,
-computes findings, and prepares notifications.
-The implementation combines sources according to the data each rule
-requires, separates events from persistent conditions, and preserves
-human records between collection cycles. Adapting it to another journal
-requires reviewing local criteria, permissions, and OJS interface
-contracts.
+Links below the work list open the \textit{Muted}, \textit{Up to date}, and
+\textit{Archived} queues. The \textit{Up to date} queue has the
+submissions without findings and the submissions that a chief editor
+marked up to date. The \textit{Archived} queue has the submissions in
+a final OJS state and the submissions in \textit{Copyediting} with a
+copyeditor. Each submission is in exactly one queue.
+
+When the chief editor selects the submission, its detail view opens on
+the right of Figure~\ref{fig-dashboard}. The top of the detail view lists
+the findings, each with its deadline when it has one. Below them, the detail
+view shows the OJS data of the submission and a link to OJS, where the chief
+editor can act. The section \textit{Activity} lists the notifications that
+the tool sent, with their recipients and delivery status, and the notes of
+the chief editors. In the running example, the activity shows the
+reminder to Reviewer~B and the notification to the assigned editor.
+
+The chief editor then records the follow-up. A note in the activity can
+state, for example, that the chief editor asked the assigned editor to
+invite another reviewer. With \textit{Mark up to date}, the chief editor
+moves the submission to the \textit{Up to date} queue. A menu next to the
+button also sets a return date in one week, two weeks, or one month.
+The mark ends at the return date, if there is one, or when the set of
+finding kinds of the submission changes. The chief editor can also associate
+a submission with its conference (Section~\ref{sec-background}). The
+association mutes the submission, so its findings no longer bring it to the
+work list.
+
+By default, every Monday the chief editors also receive the editorial
+summary, and no other user receives it. Figure~\ref{fig-emails}(b) shows
+the summary of the Monday before the running example, so the submission of
+the example is not in it. The summary lists each submission with open
+findings and links to OJS. Muted submissions and submissions marked up to
+date stay out of the summary, but editors and reviewers still receive their
+notifications.
+
+\section{Related Work}
+\label{sec-related-work}
+
+This section compares JSERD Monitoring with the features of OJS 3.2 and
+with a script that the editors of another journal use. Both solutions
+monitor submissions in OJS.
+
+OJS 3.2 has a filter of overdue submissions and reminders to reviewers after
+a due date (Section~\ref{sec-introduction}), but its interface does not
+gather in one place the cases that need an action. OJS also emails the assigned editor when a
+reviewer accepts or declines an invitation \cite{pkplib}. JSERD Monitoring
+sends this notification too (R1), with its own template, because the
+recipients engaged little with the OJS messages, according to the chief editors.
+
+The editors of another journal that also uses OJS run a Python
+script\footnote{Information from the editors of that journal. The script is
+not public.} that signs in to OJS, downloads the
+article report, and keeps the submissions in review with the latest editor
+decision of each one. The script writes these data to a shared spreadsheet
+and emails each editor the list of the submissions assigned to that editor.
+It runs on demand, keeps no history between runs, applies no deadline rule,
+and sends nothing to reviewers. Table~\ref{tbl-related} summarizes the
+comparison.
+
+\begin{table}[!htb]
+\caption{Comparison of the solutions. --: not applicable.}
+\label{tbl-related}
+\centering
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{2.4cm}*{2}{>{\raggedright\arraybackslash}p{3.2cm}}>{\raggedright\arraybackslash}X@{}}
+\toprule
+Feature & OJS 3.2 & Script of another journal & JSERD Monitoring \\
+\midrule
+Messages to editors & Answers to invitations & List of assigned submissions & Five review events (R1 to R5) \\
+Messages to reviewers & Reminders after a due date & None & Reminders and an overdue notification (R6 to R8) \\
+View of pending work & Filter of overdue submissions & Shared spreadsheet & Dashboard and summary with findings (R9 to R17) \\
+Stored history & -- & None & Snapshots of each cycle \\
+Curation & -- & None & Notes, conferences, muting, and up-to-date marks \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Unlike the other solutions, JSERD Monitoring compares successive snapshots,
+so it can notify editors and reviewers about changes and deadlines, and it
+keeps findings and curation records between cycles.
+
+\FloatBarrier
+\section{Final Considerations}
+\label{sec-final}
+
+This paper presented the requirements, the monitoring rules, the
+architecture, and the features of JSERD Monitoring, a tool external to OJS
+that supports the chief editors of JSERD in the monitoring of submissions.
+The tool meets the general objective of the work
+(Section~\ref{sec-introduction}). Its rules identify events and deadlines
+(R1 to R17), and the Email worker sends notifications to editors and
+reviewers. The dashboard and the editorial summary consolidate the pending
+work for the chief editors in place of the spreadsheet. One of the JSERD chief editors tested and validated
+the tool. This work did not measure the effects of the tool.
+
+Some limitations come from the OJS data. The participant page identifies
+editors only by name, and the tool matches editors across the sources by
+name, so it merges two people with the same name. R5 uses the state of the
+review round as a sign of a revised version. The round also leaves the
+revisions-requested state after an accept or a decline decision, so R5 can
+notify an editor about a revision that does not exist. The integration also
+depends on report plugins, participant pages, and status codes of OJS
+\cite{pkplib}, and not all of them have a stable interface. Other
+limitations come from the design. The hourly collection delays the detection
+of changes and misses a change that starts and ends between two cycles. The
+Email worker does not retry a failed attempt.
+
+Future work can measure the effects of the tool and address these
+limitations. First, a comparison of review times before and after the
+deployment, with the dates of the OJS review report, can show whether the
+notifications make reviews arrive sooner. Second, a check of the integration
+against later versions of OJS is necessary before another journal adopts
+the tool, because the OJS reports, API, and participant pages can change.
+Third, a retry policy can deliver the messages that a
+temporary SMTP error stops.
 
 \bibliographystyle{sbc}
 \bibliography{sbc-jheam-ross}
