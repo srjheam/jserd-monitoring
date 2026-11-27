@@ -26,8 +26,8 @@ IDs as the paper (`FR`, `NFR`, and `R`).
 
 - **Chief editors** use the dashboard. They receive the weekly editorial
   summary and the notification of R16. In OJS, their role is *journal editor*.
-- **Assigned editors** receive the notifications of R1 to R5. In OJS, their
-  role is *associate editor*.
+- **Associate editors** receive the notifications of R1 to R5. Each
+  submission has one associate editor, whom a chief editor assigns.
 - **Reviewers** receive the notifications of R6 to R8.
 
 ### Requirements
@@ -71,7 +71,7 @@ The queues are in [Section 4 of the paper](PGs/2026_2_SBC_Jheam_Ross/sbc-jheam-r
 
 | Email | Recipient | Template |
 | --- | --- | --- |
-| R1 to R5 | Assigned editor | [`rn1.tmpl`](src/server/internal/email/templates/rn1.tmpl) to [`rn5.tmpl`](src/server/internal/email/templates/rn5.tmpl) |
+| R1 to R5 | Associate editor | [`rn1.tmpl`](src/server/internal/email/templates/rn1.tmpl) to [`rn5.tmpl`](src/server/internal/email/templates/rn5.tmpl) |
 | R6 to R8 | Reviewer | [`rn6.tmpl`](src/server/internal/email/templates/rn6.tmpl) to [`rn8.tmpl`](src/server/internal/email/templates/rn8.tmpl) |
 | R16 | Chief editors | [`rn18.tmpl`](src/server/internal/email/templates/rn18.tmpl) |
 | Welcome email | Each recipient, once | [`welcome.tmpl`](src/server/internal/email/templates/welcome.tmpl) |
@@ -166,7 +166,7 @@ PocketBase superuser.
 | `OJS_PASSWORD` | empty | OJS account password used in live mode. |
 | `OJS_REQUEST_TIMEOUT_SECONDS` | `30` | Positive timeout for each OJS HTTP request. |
 | `OJS_FIXTURES_DIR` | `../../data/examples` | Directory containing the three fixture CSV files. Required in fixture mode. |
-| `OJS_ARTIFACT_ROOT` | `pb_data/collector_runs` | Private directory where downloaded CSV and JSON artifacts are retained. |
+| `OJS_ARTIFACT_ROOT` | `../../.runtime/pb_data/collector_runs` | Private directory where downloaded CSV and JSON artifacts are retained. On the VM, set it to `pb_data/collector_runs` (see [`docs/deployment.md`](docs/deployment.md)). |
 | `DELIVERY_MODE` | `test` | E-mail transport: `test` intercepts messages; `smtp` sends them. |
 | `SMTP_HOST` | empty | SMTP host. Required only in SMTP mode. |
 | `SMTP_PORT` | `0` | SMTP port. Must be between 1 and 65535 in SMTP mode. |
@@ -182,6 +182,7 @@ PocketBase superuser.
 | `EDITORIAL_RN11_FALLBACK_DAYS` | `7` | Positive fallback deadline, in days, for RN11 when OJS has no explicit deadline. |
 | `OJS_CHIEF_EDITOR_GROUP_ID` | empty | Optional exact OJS group ID used to resolve chief editors. |
 | `OJS_CHIEF_EDITOR_GROUP_NAME` | empty | Optional exact OJS group name used to resolve chief editors. |
+| `APP_URL` | empty | Optional public HTTP(S) URL of the dashboard. It goes in the password reset link of the dashboard. |
 
 ## Dashboard setup
 
@@ -225,8 +226,9 @@ lefthook install
 ## Deployment
 
 Deployment to the production VM is documented separately, in
-[`docs/deployment.md`](docs/deployment.md). It covers the one-command deploy,
-rollback, backups, and first-time VM setup.
+[`docs/deployment.md`](docs/deployment.md). It covers the first-time VM setup,
+the environment file of the validation stage and of the delivery stage, the
+one-command deploy, rollback, and backups.
 
 ## License
 

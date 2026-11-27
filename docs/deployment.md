@@ -1,20 +1,21 @@
 # Deployment
 
 This page explains how to deploy the JSERD monitor to the production VM, how
-to roll back, and how to get a backup. The scripts live in `scripts/`. The
-Docker Compose file and the reverse proxy configuration live in `deploy/`.
+to configure each stage, how to roll back, and how to get a backup. The
+scripts live in `scripts/`. The Docker Compose file and the reverse proxy
+configuration live in `deploy/`.
 
 ## Stage
 
 The deployment runs the **validation stage**. In this stage, the system
 collects live JSERD data and chief editors curate it. The system sends no
-e-mail; every message goes to the intercepting transport.
+e-mail. Every message goes to the intercepting transport.
 
-The **delivery stage** sends real e-mail to real chief editors. This stage is
-deferred on purpose. See
-`.scratch/delivery-stage/issues/01-plan-delivery-stage-cutover.md` for the
-plan and the trigger conditions. See `CONTEXT.md` for the full definition of
-both stages.
+The **delivery stage** sends real e-mail to the assigned editors, the
+reviewers, and the chief editors. Curation works the same in both stages.
+See `CONTEXT.md` for the full definition of both stages, and
+[The environment file of each stage](#the-environment-file-of-each-stage)
+for the values that select a stage.
 
 ## First-time setup
 
@@ -36,6 +37,92 @@ alias `jserd-vm`, or export `DEPLOY_HOST` to match the alias you chose:
 ```sh
 export DEPLOY_HOST=tcc-vm   # only if you kept the wizard's suggested alias
 ```
+
+## The environment file of each stage
+
+The wizard copies `src/server/.env.example` to `~/jserd/.env` on the VM. The
+example file runs on local fixtures, so you must edit it before the first
+deploy. The configuration reference in the README describes the variables.
+
+If a value is not valid, the server stops at startup with
+`invalid configuration: <reason>`. The container does not become healthy, and
+the deploy rolls back to the previous image, if one exists.
+
+### Values for both stages
+
+| Variable | Value |
+| --- | --- |
+| `OJS_SOURCE_MODE` | `live` |
+| `OJS_BASE_URL` | The OJS installation root, commonly ending in `/index.php`. |
+| `OJS_JOURNAL_CONTEXT` | `jserd` |
+| `OJS_USERNAME`, `OJS_PASSWORD` | The collection account in OJS. |
+| `OJS_CHIEF_EDITOR_GROUP_ID` or `OJS_CHIEF_EDITOR_GROUP_NAME` | The OJS group of the chief editors. |
+| `OJS_ARTIFACT_ROOT` | `pb_data/collector_runs` |
+| `SMTP_FROM_ADDRESS` | The sender address. Both stages require a valid address. |
+
+Set `OJS_ARTIFACT_ROOT` to `pb_data/collector_runs`. The default path is
+outside the `pb_data` volume. A deploy recreates the container, so the
+downloaded artifacts at the default path are lost, and the backup does not
+include them.
+
+### Validation stage
+
+| Variable | Value |
+| --- | --- |
+| `ALLOW_TEST_DELIVERY` | `true` |
+| `DELIVERY_MODE` | `test` |
+
+The intercepting transport records each message as sent and writes it to the
+log of the app container. In the log, pseudonyms replace the addresses, the
+names, and the data of the submission. To read the intercepted messages, run:
+
+```sh
+ssh jserd-vm
+cd jserd
+APP_IMAGE=tcc-jserd-monitor:$(cat .deployed_tag) ENV_FILE=.env \
+  docker compose -p jserd -f docker-compose.vm.yml logs app
+```
+
+If `SMTP_HOST` is set, the password reset e-mail of the dashboard goes
+through that SMTP server in both stages. `DELIVERY_MODE` controls only the
+notifications and the editorial summary.
+
+### Delivery stage
+
+| Variable | Value |
+| --- | --- |
+| `DELIVERY_MODE` | `smtp` |
+| `ALLOW_TEST_DELIVERY` | `false`. The server then rejects `DELIVERY_MODE=test`. |
+| `SMTP_HOST`, `SMTP_PORT` | The SMTP server. |
+| `SMTP_TLS` | `true`. The server requires TLS for every SMTP host that is not local. |
+| `SMTP_USERNAME`, `SMTP_PASSWORD` | The SMTP account. Set both or neither. |
+| `SMTP_REPLY_TO` | Optional. The reply-to address of the notifications to editors. |
+| `APP_URL` | The public URL of the dashboard, for example `https://jserd.duckdns.org`. It goes in the password reset link. |
+
+`SMTP_TLS=true` opens an implicit TLS connection, which SMTP servers usually
+accept on port 465. The server does not use STARTTLS on a remote host.
+
+To move from the validation stage to the delivery stage:
+
+1. On your local machine, run `scripts/test-smtp-integration.sh`. The script
+   starts a local Mailpit container and tests the SMTP transport against it.
+   It does not test your SMTP server.
+2. On the VM, edit `~/jserd/.env` with the values of the delivery stage.
+3. Recreate the app container, as
+   [Changing an environment variable without a full deploy](#changing-an-environment-variable-without-a-full-deploy)
+   explains.
+4. Read the log of the app container. Make sure that it has no
+   `invalid configuration` line.
+
+The messages that the intercepting transport recorded stay recorded as sent.
+The delivery stage does not send them again. This includes the welcome
+e-mail of each recipient.
+
+The Email worker does not retry a failed attempt. The Activity section of the
+dashboard shows the delivery status of each notification.
+
+To go back to the validation stage, set `DELIVERY_MODE=test` and
+`ALLOW_TEST_DELIVERY=true`, then recreate the app container.
 
 ## The deploy command
 
@@ -153,7 +240,7 @@ ssh jserd-vm "cat jserd/Caddyfile"
 After editing it on the VM, reload the proxy without touching the app:
 
 ```sh
-ssh jserd-vm "cd jserd && docker compose -p jserd -f docker-compose.vm.yml restart caddy"
+ssh jserd-vm 'cd jserd && APP_IMAGE=tcc-jserd-monitor:$(cat .deployed_tag) ENV_FILE=.env docker compose -p jserd -f docker-compose.vm.yml restart caddy'
 ```
 
 ## The hostname
